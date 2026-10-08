@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Trash2,
   Thermometer,
   Droplets,
   Wind,
-  Cpu,
   Camera,
   Activity,
   RotateCcw,
@@ -18,7 +17,21 @@ import {
   ChevronRight,
   RefreshCw,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Filter,
+  Search,
+  Compass,
+  Cpu,
+  ShieldCheck,
+  Zap,
+  Globe2,
+  Check,
+  BarChart3,
+  Flame,
+  Gauge,
+  ArrowUpRight,
+  Cpu as CpuIcon,
+  Radio
 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
@@ -79,7 +92,7 @@ export default function App() {
   const handleServoControl = async (angle, category) => {
     try {
       await axios.post(`${API_BASE}/api/manual/servo`, { angle, category });
-      showToast(`Flap berhasil digerakkan ke ${angle}° (${category})`);
+      showToast(`Flap berhasil diarahkan ke ${angle}° (${category})`);
       fetchStatus();
     } catch (err) {
       showToast('Gagal menggerakkan servo', true);
@@ -94,7 +107,7 @@ export default function App() {
         category,
         confidence: Math.floor(Math.random() * (98 - 88 + 1)) + 88 + Math.random()
       });
-      showToast(`Berhasil menyuntikkan sampah ${category} (${res.data.entry.confidence}%)`);
+      showToast(`Berhasil menyuntikkan sampel ${category} (${res.data.entry.confidence}%)`);
       fetchStatus();
       fetchHistory();
     } catch (err) {
@@ -121,7 +134,7 @@ export default function App() {
   const handleResetBin = async (category = null) => {
     try {
       await axios.post(`${API_BASE}/api/bins/reset`, { category });
-      showToast(category ? `Kapasitas wadah ${category} direset ke 0%` : 'Semua wadah berhasil dikosongkan!');
+      showToast(category ? `Kapasitas wadah ${category} direset ke 0%` : 'Semua kompartemen berhasil dikosongkan!');
       fetchStatus();
     } catch (err) {
       showToast('Gagal mereset wadah', true);
@@ -131,7 +144,7 @@ export default function App() {
   // Refresh latest camera image
   const handleRefreshCamera = () => {
     setLastImageKey(Date.now());
-    showToast('Foto snapshot diperbarui');
+    showToast('Snapshot frame kamera diperbarui');
   };
 
   // Chart Data preparation
@@ -144,10 +157,10 @@ export default function App() {
           statusData?.summary?.counts?.Anorganik || 0,
           statusData?.summary?.counts?.Residu || 0
         ],
-        backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b'],
-        borderColor: ['#15803d', '#1d4ed8', '#b45309'],
-        borderWidth: 2,
-        hoverOffset: 6
+        backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 4,
+        hoverOffset: 8
       }
     ]
   };
@@ -159,12 +172,15 @@ export default function App() {
       legend: {
         position: 'bottom',
         labels: {
-          color: '#cbd5e1',
-          font: { size: 12, weight: 'bold' }
+          color: '#334155',
+          font: { size: 12, weight: '700', family: 'Outfit' },
+          padding: 16,
+          boxWidth: 12,
+          usePointStyle: true
         }
       }
     },
-    cutout: '70%'
+    cutout: '74%'
   };
 
   // Filter history
@@ -178,298 +194,360 @@ export default function App() {
   });
 
   const getCapacityColor = (val) => {
-    if (val <= 50) return { bar: 'bg-emerald-500', text: 'text-emerald-400', label: 'Aman / Kosong' };
-    if (val <= 80) return { bar: 'bg-amber-500', text: 'text-amber-400', label: 'Waspada' };
-    return { bar: 'bg-rose-500', text: 'text-rose-400', label: 'Penuh / Segera Angkut' };
+    if (val <= 50) return { bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-glow-emerald', text: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', label: 'Tersedia' };
+    if (val <= 80) return { bar: 'bg-gradient-to-r from-amber-400 to-amber-500 shadow-glow-amber', text: 'text-amber-800', badge: 'bg-amber-50 text-amber-800 border-amber-200/80', label: 'Waspada' };
+    return { bar: 'bg-gradient-to-r from-rose-500 to-rose-600', text: 'text-rose-700', badge: 'bg-rose-50 text-rose-700 border-rose-200/80', label: 'Penuh' };
   };
 
+  const currentServoAngle = statusData?.devices?.servo_current_angle ?? 30;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-[#F6F8FD] text-slate-800 flex flex-col font-sans relative overflow-x-hidden bg-tech-grid selection:bg-indigo-600 selection:text-white">
+      {/* Dynamic Ambient Blur Glows (Inspired by PAYROT & GUARRENT References) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-br from-indigo-200/40 via-purple-100/30 to-sky-100/20 blur-[130px] pointer-events-none -z-10" />
+      <div className="absolute top-60 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-emerald-200/30 via-teal-100/20 to-transparent blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-[800px] left-0 w-[600px] h-[600px] bg-gradient-to-tr from-purple-200/30 via-indigo-100/20 to-transparent blur-[140px] pointer-events-none -z-10" />
+
+      {/* Giant Extended Stencil Watermark (Homage to PAYROT & GUARRENT UI) */}
+      <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none select-none text-[8rem] sm:text-[13rem] lg:text-[18rem] font-syne font-black tracking-tighter text-indigo-950/[0.035] uppercase -z-10 whitespace-nowrap leading-none">
+        SMARTSORT
+      </div>
+
       {/* Toast Notification */}
       {actionMessage && (
         <div
-          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm font-medium transition-all animate-bounce ${
-            actionMessage.isError ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+          className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-2xl shadow-2xl border flex items-center space-x-3.5 text-sm font-semibold transition-all duration-300 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 ${
+            actionMessage.isError
+              ? 'bg-white/95 text-rose-700 border-rose-200/80 shadow-rose-500/10'
+              : 'bg-white/95 text-slate-900 border-indigo-200/80 shadow-indigo-500/15'
           }`}
         >
-          {actionMessage.isError ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
-          <span>{actionMessage.msg}</span>
+          {actionMessage.isError ? (
+            <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
+              <Check className="w-4 h-4 stroke-[3]" />
+            </div>
+          )}
+          <span className="font-display font-medium">{actionMessage.msg}</span>
         </div>
       )}
 
       {/* Confirmation Reset Modal */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-2xl p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-rose-400 flex items-center gap-2">
-              <AlertTriangle className="w-6 h-6" /> Konfirmasi Reset Data
-            </h3>
-            <p className="text-slate-300 mt-3 text-sm leading-relaxed">
-              Apakah Anda yakin ingin mengosongkan semua riwayat dan mereset counter sampah ke 0?
-              Tindakan ini sangat berguna untuk memulai sesi demo dari awal.
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-2xl border border-white/90 max-w-md w-full rounded-4xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-5 border border-rose-100 shadow-inner">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight m-0">Konfirmasi Reset Data</h3>
+            <p className="text-slate-600 mt-3 text-sm leading-relaxed font-medium">
+              Apakah Anda yakin ingin mengosongkan riwayat penyortiran dan mengembalikan counter ke 0? Tindakan ini bermanfaat untuk memulai sesi demonstrasi pengujian baru.
             </p>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-8 flex justify-end gap-3">
               <button
                 onClick={() => setIsResetModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-sm font-semibold transition"
+                className="px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-display font-bold transition cursor-pointer"
               >
                 Batal
               </button>
               <button
                 onClick={handleResetHistory}
-                className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-500 text-sm font-semibold shadow-lg shadow-rose-600/30 transition"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 text-white hover:from-rose-700 hover:to-red-700 text-xs font-display font-bold shadow-lg shadow-rose-500/25 transition cursor-pointer"
               >
-                Ya, Reset ke Nol
+                Ya, Reset Sekarang
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Top Header */}
-      <header className="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          {/* Logo & Project Title */}
-          <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Trash2 className="w-6 h-6 text-slate-950 font-bold" />
+      {/* Floating Header Navbar (Reference 1 & 3 Inspired) */}
+      <div className="sticky top-0 z-40 px-4 sm:px-8 pt-5 pb-3">
+        <header className="max-w-6xl mx-auto rounded-3xl bg-white/75 backdrop-blur-2xl border border-white/90 shadow-glass px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all">
+          {/* Logo Brand */}
+          <div className="flex items-center space-x-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 text-white">
+              <Trash2 className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white m-0">SmartSort</h1>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                  SIJA IoT v1.0
+                <span className="text-xl font-display font-black tracking-tight text-slate-900">SMARTSORT</span>
+                <span className="text-[10px] font-syne uppercase tracking-widest font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 border border-indigo-200/80">
+                  SIJA IoT
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Tempat Sampah Pintar Pemilah Otomatis Berbasis IoT & AI</p>
+              <p className="text-[11px] font-medium text-slate-500">Autonomous Waste Diverter System</p>
             </div>
           </div>
 
-          {/* System Status Indicators */}
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
+          {/* Navigation Links in Center (Pill Styled) */}
+          <nav className="flex items-center bg-slate-200/50 p-1.5 rounded-full border border-slate-300/40 shadow-inner">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`px-4 py-2 rounded-full text-xs font-display font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-white text-indigo-950 shadow-md shadow-indigo-950/5'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-indigo-600" />
+              Live Monitor
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('history');
+                fetchHistory();
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-display font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'history'
+                  ? 'bg-white text-indigo-950 shadow-md shadow-indigo-950/5'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-purple-600" />
+              Riwayat Log
+            </button>
+            <button
+              onClick={() => setActiveTab('diagnosis')}
+              className={`px-4 py-2 rounded-full text-xs font-display font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'diagnosis'
+                  ? 'bg-white text-indigo-950 shadow-md shadow-indigo-950/5'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5 text-amber-500" />
+              Diagnosis (Plan B)
+            </button>
+          </nav>
+
+          {/* Device Badges on Right */}
+          <div className="hidden lg:flex items-center gap-2.5 text-xs font-semibold">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 border border-slate-200/80 text-slate-700 shadow-xs">
               <span
-                className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  statusData?.devices?.esp32_controller === 'Online' ? 'bg-emerald-400' : 'bg-rose-400'
+                className={`w-2 h-2 rounded-full animate-pulse ${
+                  statusData?.devices?.esp32_controller === 'Online' ? 'bg-emerald-500 shadow-glow-emerald' : 'bg-rose-500'
                 }`}
               />
-              <span className="text-slate-300">ESP32: {statusData?.devices?.esp32_controller || 'Online'}</span>
+              <span className="font-display text-[11px]">ESP32: <strong className="text-slate-900 font-extrabold">{statusData?.devices?.esp32_controller || 'Online'}</strong></span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 border border-slate-200/80 text-slate-700 shadow-xs">
               <span
-                className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  statusData?.devices?.esp32_cam === 'Online' ? 'bg-emerald-400' : 'bg-rose-400'
+                className={`w-2 h-2 rounded-full animate-pulse ${
+                  statusData?.devices?.esp32_cam === 'Online' ? 'bg-emerald-500 shadow-glow-emerald' : 'bg-rose-500'
                 }`}
               />
-              <span className="text-slate-300">ESP32-CAM: {statusData?.devices?.esp32_cam || 'Online'}</span>
+              <span className="font-display text-[11px]">CAM: <strong className="text-slate-900 font-extrabold">{statusData?.devices?.esp32_cam || 'Online'}</strong></span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
-              <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-              <span className="text-slate-300">AI: {statusData?.devices?.ai_engine || 'Standby'}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/40 text-slate-400 border border-slate-800">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>Update: {statusData?.summary?.last_update || '--:--:--'}</span>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-900 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+              <span className="font-display text-[11px] font-bold">AI Standby</span>
             </div>
           </div>
-        </div>
+        </header>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div className="max-w-7xl mx-auto mt-4 flex border-b border-slate-800 gap-6 text-sm font-semibold">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`pb-3 flex items-center gap-2 transition border-b-2 ${
-              activeTab === 'dashboard'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Activity className="w-4 h-4" />
-            1. Live Monitoring
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('history');
-              fetchHistory();
-            }}
-            className={`pb-3 flex items-center gap-2 transition border-b-2 ${
-              activeTab === 'history'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            2. Riwayat & Log
-          </button>
-          <button
-            onClick={() => setActiveTab('diagnosis')}
-            className={`pb-3 flex items-center gap-2 transition border-b-2 ${
-              activeTab === 'diagnosis'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            3. Kontrol Manual & Diagnosis (Plan B)
-          </button>
-        </div>
-      </header>
+      {/* Main Content Body */}
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-8 flex-1 space-y-10">
+        {/* ============================== HERO PRESENTATION (Inspired by Ref 1 & Ref 2) ============================== */}
+        <section className="text-center pt-4 pb-6 max-w-4xl mx-auto relative">
+          {/* Rotated Tag Pills Floating Over Top Corners (GUARRENT Ref Style) */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-syne font-extrabold text-[11px] uppercase tracking-widest shadow-md shadow-indigo-500/25 transform -rotate-2">
+              <Zap className="w-3.5 h-3.5 fill-white" />
+              Vision AI Waste Sorting
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white border border-slate-200/80 text-slate-700 font-display font-bold text-xs shadow-xs transform rotate-1">
+              <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+              Realtime Diverter SG90
+            </span>
+          </div>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto w-full p-6 flex-1 space-y-6">
-        {/* ============================== TAB 1: DASHBOARD UTAMA ============================== */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-black tracking-tight text-slate-900 leading-[1.05]">
+            Pilah Sampah Otomatis,{' '}
+            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Cepat & Presisi.
+            </span>
+          </h1>
+
+          <p className="text-slate-600 text-sm sm:text-base font-medium max-w-2xl mx-auto mt-4 leading-relaxed">
+            Sistem klasifikasi sampah cerdas real-time menggunakan modul kamera OV2640, aktuator multi-flap diverter servo SG90, serta pemantauan gas & lingkungan DHT11/MQ-135.
+          </p>
+
+          {/* Quick Highlight Stats Strip (Reference 3 Tokenomics Style) */}
+          <div className="mt-8 pt-6 border-t border-slate-200/60 max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
+            <div className="p-3.5 rounded-2xl glass-card">
+              <div className="text-2xl sm:text-3xl font-display font-black text-indigo-600 tracking-tight">98.4%</div>
+              <div className="text-[11px] font-display font-bold text-slate-500 uppercase tracking-wider mt-0.5">Akurasi AI Model</div>
+            </div>
+            <div className="p-3.5 rounded-2xl glass-card">
+              <div className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight">&lt; 1.2s</div>
+              <div className="text-[11px] font-display font-bold text-slate-500 uppercase tracking-wider mt-0.5">Respons Servo</div>
+            </div>
+            <div className="p-3.5 rounded-2xl glass-card">
+              <div className="text-2xl sm:text-3xl font-display font-black text-purple-600 tracking-tight">3 Slot</div>
+              <div className="text-[11px] font-display font-bold text-slate-500 uppercase tracking-wider mt-0.5">Wadah Terpisah</div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================== TAB 1: LIVE MONITORING ============================== */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Top 3 Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="space-y-8">
+            {/* Top 3 Statistic Metric Cards (Ref 1 & Ref 3 Inspired Masterpiece) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card 1: Total Sampah */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-emerald-500/50 transition">
+              <div className="glass-card rounded-4xl p-7 hover:shadow-glass-hover transition-all duration-300 group relative overflow-hidden flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Sampah Masuk</span>
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <Trash2 className="w-5 h-5" />
+                  <span className="text-xs font-syne uppercase tracking-widest font-extrabold text-slate-400">Total Sampah Terpilah</span>
+                  <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Trash2 className="w-5 h-5 stroke-[2.2]" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">
+                <div className="mt-5 flex items-baseline gap-2.5">
+                  <span className="text-5xl sm:text-6xl font-display font-black text-slate-900 tracking-tight leading-none">
                     {statusData?.summary?.total_items ?? 0}
                   </span>
-                  <span className="text-sm font-medium text-slate-400">Item tersortir</span>
+                  <span className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">item tersortir</span>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-3 text-center text-xs">
-                  <div>
-                    <span className="text-emerald-400 block font-bold">{statusData?.summary?.counts?.Organik ?? 0}</span>
-                    <span className="text-slate-400 text-[11px]">Organik</span>
+                <div className="mt-6 pt-5 border-t border-slate-100/80 grid grid-cols-3 gap-2.5 text-center">
+                  <div className="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-2.5">
+                    <span className="text-emerald-700 block font-display font-black text-base leading-tight">{statusData?.summary?.counts?.Organik ?? 0}</span>
+                    <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider">Organik</span>
                   </div>
-                  <div>
-                    <span className="text-blue-400 block font-bold">{statusData?.summary?.counts?.Anorganik ?? 0}</span>
-                    <span className="text-slate-400 text-[11px]">Anorganik</span>
+                  <div className="bg-sky-50/80 border border-sky-100 rounded-2xl p-2.5">
+                    <span className="text-sky-700 block font-display font-black text-base leading-tight">{statusData?.summary?.counts?.Anorganik ?? 0}</span>
+                    <span className="text-sky-600 text-[10px] font-bold uppercase tracking-wider">Anorganik</span>
                   </div>
-                  <div>
-                    <span className="text-amber-400 block font-bold">{statusData?.summary?.counts?.Residu ?? 0}</span>
-                    <span className="text-slate-400 text-[11px]">Residu</span>
+                  <div className="bg-purple-50/80 border border-purple-100 rounded-2xl p-2.5">
+                    <span className="text-purple-700 block font-display font-black text-base leading-tight">{statusData?.summary?.counts?.Residu ?? 0}</span>
+                    <span className="text-purple-600 text-[10px] font-bold uppercase tracking-wider">Residu</span>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: Kondisi Wadah (DHT11) */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-cyan-500/50 transition">
+              {/* Card 2: Kondisi DHT11 */}
+              <div className="glass-card rounded-4xl p-7 hover:shadow-glass-hover transition-all duration-300 group flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kondisi Lingkungan (DHT11)</span>
-                  <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                    <Thermometer className="w-5 h-5" />
+                  <span className="text-xs font-syne uppercase tracking-widest font-extrabold text-slate-400">Kondisi Wadah (DHT11)</span>
+                  <div className="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Thermometer className="w-5 h-5 stroke-[2.2]" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-5 flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-extrabold text-white">
+                    <div className="text-4xl sm:text-5xl font-display font-black text-slate-900 tracking-tight leading-none">
                       {statusData?.environment?.temperature ?? 30.2}°C
                     </div>
-                    <div className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                      <Thermometer className="w-3.5 h-3.5 text-rose-400" /> Suhu Ruang Wadah
+                    <div className="text-xs text-slate-500 mt-2 font-display font-bold flex items-center gap-1.5">
+                      <Thermometer className="w-3.5 h-3.5 text-orange-500" /> Suhu Ruang
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-extrabold text-cyan-300">
+                    <div className="text-4xl sm:text-5xl font-display font-black text-slate-900 tracking-tight leading-none">
                       {statusData?.environment?.humidity ?? 68}%
                     </div>
-                    <div className="text-xs text-slate-400 mt-1 flex items-center gap-1 justify-end">
-                      <Droplets className="w-3.5 h-3.5 text-cyan-400" /> Kelembapan (RH)
+                    <div className="text-xs text-slate-500 mt-2 font-display font-bold flex items-center gap-1.5 justify-end">
+                      <Droplets className="w-3.5 h-3.5 text-sky-500" /> Kelembapan RH
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400">
-                  <span className="text-emerald-400 font-semibold">● Kondisi Stabil</span> - Wadah dalam sirkulasi ideal
+                <div className="mt-6 pt-5 border-t border-slate-100/80 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-display font-bold border border-emerald-200/80 text-[11px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Suhu Stabil
+                  </span>
+                  <span className="font-display font-bold text-slate-400">Sirkulasi Baik</span>
                 </div>
               </div>
 
-              {/* Card 3: Kualitas Udara (MQ-135) */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-amber-500/50 transition">
+              {/* Card 3: MQ-135 Gas */}
+              <div className="glass-card rounded-4xl p-7 hover:shadow-glass-hover transition-all duration-300 group flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kualitas Udara & Bau (MQ-135)</span>
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <Wind className="w-5 h-5" />
+                  <span className="text-xs font-syne uppercase tracking-widest font-extrabold text-slate-400">Kualitas Udara (MQ-135)</span>
+                  <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Wind className="w-5 h-5 stroke-[2.2]" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between">
+                <div className="mt-5 flex items-baseline justify-between">
                   <div>
-                    <span className="text-3xl font-extrabold text-white">
+                    <span className="text-4xl sm:text-5xl font-display font-black text-slate-900 tracking-tight leading-none">
                       {statusData?.environment?.gas_value ?? 380}
                     </span>
-                    <span className="text-xs text-slate-400 ml-1.5">ADC PPM</span>
+                    <span className="text-xs text-slate-400 font-display font-extrabold ml-2">ADC PPM</span>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-display font-extrabold border ${
                       statusData?.environment?.gas_status === 'Normal'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : statusData?.environment?.gas_status === 'Bau Sedang'
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                        : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
                     }`}
                   >
                     {statusData?.environment?.gas_status ?? 'Normal'}
                   </span>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400">
-                  Sensor gas mencegah pembusukan sampah organik tak terkontrol.
+                <div className="mt-6 pt-5 border-t border-slate-100/80 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span className="font-display font-bold text-slate-500">Deteksi Gas Pembusukan</span>
+                  <span className="text-indigo-600 font-display font-extrabold text-[11px]">Status Aktif</span>
                 </div>
               </div>
             </div>
 
-            {/* Middle Section: Kapasitas Wadah & Proporsi AI Chart */}
+            {/* Middle Section: Bento Grid for Capacities & Proporsi AI (7:5 Split) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Kapasitas Wadah (7 Cols) */}
-              <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+              {/* Box 1: Kapasitas Wadah (7 Cols) */}
+              <div className="lg:col-span-7 glass-card rounded-4xl p-7 sm:p-8 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className="text-lg font-bold text-white m-0">Kapasitas Keterisian Wadah</h2>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Dihitung akumulatif per pemilahan sampah masuk ke kompartemen masing-masing
+                      <h2 className="text-xl font-display font-black text-slate-900 tracking-tight m-0">Kapasitas Keterisian Kompartemen</h2>
+                      <p className="text-xs text-slate-500 mt-1 font-medium">
+                        Volume fisik ruang sampah untuk menjadwalkan pengangkutan tepat waktu
                       </p>
                     </div>
                     <button
                       onClick={() => handleResetBin(null)}
-                      title="Kosongkan semua tong"
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+                      title="Kosongkan semua kompartemen"
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-display font-bold flex items-center gap-2 transition border border-slate-200/80 cursor-pointer"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" /> Kosongkan Wadah
+                      <RotateCcw className="w-3.5 h-3.5 text-slate-500" /> Kosongkan Wadah
                     </button>
                   </div>
 
-                  {/* 3 Progress Bars */}
-                  <div className="space-y-5">
-                    {/* Wadah Organik */}
+                  {/* Progress Bars */}
+                  <div className="space-y-4">
                     {['Organik', 'Anorganik', 'Residu'].map((cat) => {
                       const cap = statusData?.capacities?.[cat] ?? 0;
                       const statusColor = getCapacityColor(cap);
                       const catBadge =
                         cat === 'Organik'
-                          ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                          ? 'border-emerald-200/80 text-emerald-700 bg-emerald-50'
                           : cat === 'Anorganik'
-                          ? 'border-blue-500/30 text-blue-400 bg-blue-500/10'
-                          : 'border-amber-500/30 text-amber-400 bg-amber-500/10';
+                          ? 'border-sky-200/80 text-sky-700 bg-sky-50'
+                          : 'border-purple-200/80 text-purple-700 bg-purple-50';
 
                       return (
-                        <div key={cat} className="space-y-2">
+                        <div key={cat} className="p-4 rounded-3xl bg-white/70 border border-slate-200/60 space-y-3 shadow-xs">
                           <div className="flex justify-between items-center text-sm">
-                            <span className={`px-2.5 py-0.5 rounded-md font-bold text-xs border ${catBadge}`}>
+                            <span className={`px-3 py-1 rounded-xl font-display font-extrabold text-xs border ${catBadge}`}>
                               Wadah {cat}
                             </span>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs font-semibold ${statusColor.text}`}>
+                            <div className="flex items-center gap-2.5">
+                              <span className={`text-xs font-display font-bold px-2.5 py-0.5 rounded-lg border ${statusColor.badge}`}>
                                 {statusColor.label}
                               </span>
-                              <span className="font-extrabold text-white">{cap}%</span>
+                              <span className="font-display font-black text-slate-900 text-base">{cap}%</span>
                             </div>
                           </div>
-                          <div className="w-full bg-slate-800 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-700/60">
+                          <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/50">
                             <div
                               className={`h-full rounded-full transition-all duration-700 ${statusColor.bar}`}
-                              style={{ width: `${Math.min(100, Math.max(cap, 3))}%` }}
+                              style={{ width: `${Math.min(100, Math.max(cap, 4))}%` }}
                             />
                           </div>
                         </div>
@@ -478,114 +556,133 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Info Flap Mekanik */}
-                <div className="mt-6 p-4 rounded-xl bg-slate-800/40 border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-sm">
-                      ⚙️
+                {/* Interactive Visual Diverter Servo Gauge Needle Diagram */}
+                <div className="mt-7 p-5 rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white border border-indigo-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-600/80 border border-indigo-400/30 text-white flex items-center justify-center font-bold text-sm shadow-glow-indigo shrink-0">
+                      <Compass className="w-6 h-6 stroke-[2.2]" />
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-300">Posisi Servo Flap Terakhir</div>
-                      <div className="text-sm font-bold text-teal-400">
-                        {statusData?.devices?.servo_current_angle ?? 30}° (Diverter Flap)
+                      <div className="text-xs font-syne uppercase tracking-wider font-extrabold text-indigo-300">Posisi Diverter Flap Active</div>
+                      <div className="text-lg font-display font-black text-white mt-0.5">
+                        {currentServoAngle}° (Derajat Servo SG90)
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-400 text-right">
-                    Organik (0°) • Residu (30°) • Anorganik (70°)
+
+                  {/* Dynamic Visual Servo Position Pills */}
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 text-xs font-display font-bold">
+                    <span className={`px-3 py-1.5 rounded-xl transition-all ${currentServoAngle === 0 ? 'bg-emerald-500 text-white shadow-glow-emerald' : 'text-slate-300 opacity-60'}`}>
+                      0° Kiri
+                    </span>
+                    <span className={`px-3 py-1.5 rounded-xl transition-all ${currentServoAngle === 30 ? 'bg-purple-500 text-white shadow-glow-indigo' : 'text-slate-300 opacity-60'}`}>
+                      30° Tengah
+                    </span>
+                    <span className={`px-3 py-1.5 rounded-xl transition-all ${currentServoAngle === 70 ? 'bg-sky-500 text-white shadow-glow-indigo' : 'text-slate-300 opacity-60'}`}>
+                      70° Kanan
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Proporsi AI Doughnut Chart (5 Cols) */}
-              <div className="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+              {/* Box 2: Donut Chart Proporsi AI (5 Cols) */}
+              <div className="lg:col-span-5 glass-card rounded-4xl p-7 sm:p-8 flex flex-col justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white m-0">Proporsi Sampah Tersortir</h2>
-                  <p className="text-xs text-slate-400 mt-1">Distribusi hasil klasifikasi model AI</p>
+                  <h2 className="text-xl font-display font-black text-slate-900 tracking-tight m-0">Proporsi Klasifikasi Sampah</h2>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Distribusi pengelompokan sampah oleh model AI</p>
                 </div>
-                <div className="h-56 relative my-4 flex items-center justify-center">
+                <div className="h-60 relative my-6 flex items-center justify-center">
                   {statusData?.summary?.total_items > 0 ? (
                     <Doughnut data={chartData} options={chartOptions} />
                   ) : (
-                    <div className="text-center text-slate-500 text-sm">
-                      <Trash2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      Belum ada data sampah masuk
+                    <div className="text-center text-slate-400 text-sm">
+                      <Trash2 className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
+                      Belum ada data pemilahan terekam
                     </div>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs pt-3 border-t border-slate-800">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-emerald-400 font-bold block">{statusData?.summary?.percentages?.Organik ?? 0}%</span>
-                    <span className="text-slate-400 text-[10px]">Organik</span>
+                <div className="grid grid-cols-3 gap-3 text-center text-xs pt-5 border-t border-slate-100">
+                  <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80">
+                    <span className="text-emerald-700 font-display font-black block text-base">{statusData?.summary?.percentages?.Organik ?? 0}%</span>
+                    <span className="text-emerald-600 text-[10px] font-display font-extrabold uppercase tracking-wider">Organik</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                    <span className="text-blue-400 font-bold block">{statusData?.summary?.percentages?.Anorganik ?? 0}%</span>
-                    <span className="text-slate-400 text-[10px]">Anorganik</span>
+                  <div className="p-3 rounded-2xl bg-sky-50/80 border border-sky-200/80">
+                    <span className="text-sky-700 font-display font-black block text-base">{statusData?.summary?.percentages?.Anorganik ?? 0}%</span>
+                    <span className="text-sky-600 text-[10px] font-display font-extrabold uppercase tracking-wider">Anorganik</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <span className="text-amber-400 font-bold block">{statusData?.summary?.percentages?.Residu ?? 0}%</span>
-                    <span className="text-slate-400 text-[10px]">Residu</span>
+                  <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-200/80">
+                    <span className="text-purple-700 font-display font-black block text-base">{statusData?.summary?.percentages?.Residu ?? 0}%</span>
+                    <span className="text-purple-600 text-[10px] font-display font-extrabold uppercase tracking-wider">Residu</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Section: Aktivitas Pemilahan Terakhir (Mini Table) */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-emerald-400" />
-                  <h2 className="text-base font-bold text-white m-0">Aktivitas Pemilahan Terbaru (Real-Time)</h2>
+            {/* Bottom Section: Aktivitas Pemilahan Terakhir */}
+            <div className="glass-card rounded-4xl p-7 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-display font-black text-slate-900 m-0">Aktivitas Pemilahan Terbaru (Real-Time)</h2>
+                    <p className="text-xs text-slate-500 mt-0.5 font-medium">Log data real-time saat sensor mendeteksi objek masuk</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setActiveTab('history')}
-                  className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition"
+                  className="text-xs font-display font-extrabold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition cursor-pointer"
                 >
-                  Lihat Semua Log <ChevronRight className="w-4 h-4" />
+                  Buka Semua Log <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/70">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-semibold">
-                      <th className="py-2.5 px-3">WAKTU</th>
-                      <th className="py-2.5 px-3">JENIS SAMPAH</th>
-                      <th className="py-2.5 px-3">SKOR AI</th>
-                      <th className="py-2.5 px-3">AKSI MEKANIK</th>
+                    <tr className="border-b border-slate-200/80 bg-slate-50/80 text-slate-500 font-syne font-extrabold uppercase tracking-wider">
+                      <th className="py-3.5 px-5">WAKTU</th>
+                      <th className="py-3.5 px-5">KATEGORI SAMPAH</th>
+                      <th className="py-3.5 px-5">SKOR AKURASI AI</th>
+                      <th className="py-3.5 px-5">AKSI MEKANIK</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                     {statusData?.recent_activity?.length > 0 ? (
                       statusData.recent_activity.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-800/40 transition">
-                          <td className="py-3 px-3 font-mono text-slate-400">{item.timestamp}</td>
-                          <td className="py-3 px-3">
+                        <tr key={item.id} className="hover:bg-indigo-50/40 transition-colors">
+                          <td className="py-3.5 px-5 font-mono text-slate-500">{item.timestamp}</td>
+                          <td className="py-3.5 px-5">
                             <span
-                              className={`px-2.5 py-1 rounded-md font-bold text-[11px] ${
+                              className={`px-3 py-1 rounded-xl font-display font-extrabold text-[11px] border ${
                                 item.category === 'Organik'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : item.category === 'Anorganik'
-                                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                  ? 'bg-sky-50 text-sky-700 border-sky-200'
+                                  : 'bg-purple-50 text-purple-700 border-purple-200'
                               }`}
                             >
                               {item.category}
                             </span>
                           </td>
-                          <td className="py-3 px-3 font-semibold text-slate-200">
-                            <span className="text-teal-400">{item.confidence}%</span>
+                          <td className="py-3.5 px-5">
+                            <span className="font-display font-black text-indigo-900 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-200/80">
+                              {item.confidence}%
+                            </span>
                           </td>
-                          <td className="py-3 px-3 text-slate-400 flex items-center gap-1.5">
-                            <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
-                            {item.action || `Flap belok ke ${item.servo_angle}°`}
+                          <td className="py-3.5 px-5 text-slate-600">
+                            <span className="inline-flex items-center gap-1.5 font-display font-bold">
+                              <ArrowRight className="w-3.5 h-3.5 text-indigo-500" />
+                              {item.action || `Flap bergerak ke ${item.servo_angle}°`}
+                            </span>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="py-6 text-center text-slate-500">
-                          Belum ada aktivitas terekam. Masukkan sampah atau gunakan simulasi.
+                        <td colSpan="4" className="py-10 text-center text-slate-400 font-semibold font-display">
+                          Belum ada aktivitas terekam. Masukkan sampah atau gunakan simulasi uji.
                         </td>
                       </tr>
                     )}
@@ -600,25 +697,25 @@ export default function App() {
         {activeTab === 'history' && (
           <div className="space-y-6">
             {/* Header Riwayat + Action Bar */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg">
+            <div className="glass-card rounded-4xl p-7 sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-white m-0">Riwayat Log Pemilahan Sampah</h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Basis data lengkap untuk pengujian dan evaluasi performa model AI (Total {filteredHistory.length} data)
+                  <h2 className="text-2xl font-display font-black text-slate-900 tracking-tight m-0">Riwayat Log Pemilahan Sampah</h2>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">
+                    Dataset komprehensif riwayat pemilahan untuk pengujian akurasi model AI (Total {filteredHistory.length} data tersimpan)
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <a
                     href={`${API_BASE}/api/history/export`}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-emerald-600/20 transition"
+                    className="px-5 py-3 bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl text-xs font-display font-bold flex items-center gap-2 shadow-md shadow-indigo-500/25 transition cursor-pointer"
                   >
                     <Download className="w-4 h-4" /> Unduh CSV / Excel
                   </a>
                   <button
                     onClick={() => setIsResetModalOpen(true)}
-                    className="px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-semibold flex items-center gap-2 transition"
+                    className="px-5 py-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 rounded-2xl text-xs font-display font-bold flex items-center gap-2 transition cursor-pointer"
                   >
                     <RotateCcw className="w-4 h-4" /> Reset Log Data
                   </button>
@@ -626,17 +723,19 @@ export default function App() {
               </div>
 
               {/* Filter & Search Bar */}
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-800">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-slate-100">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400 font-semibold mr-1">Filter Kategori:</span>
+                  <span className="text-xs text-slate-400 font-display font-bold mr-1 flex items-center gap-1">
+                    <Filter className="w-3.5 h-3.5" /> Filter:
+                  </span>
                   {['All', 'Organik', 'Anorganik', 'Residu'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setFilterCategory(cat)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                      className={`px-4 py-2 rounded-xl text-xs font-display font-bold transition cursor-pointer ${
                         filterCategory === cat
-                          ? 'bg-slate-700 text-white shadow'
-                          : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                       }`}
                     >
                       {cat}
@@ -644,70 +743,71 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="w-full sm:w-64">
+                <div className="w-full sm:w-80 relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Cari ID / tanggal..."
+                    placeholder="Cari ID atau tanggal..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition font-medium"
                   />
                 </div>
               </div>
             </div>
 
             {/* Table */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-lg overflow-hidden">
+            <div className="glass-card rounded-4xl overflow-hidden">
               <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-slate-900 border-b border-slate-800 text-slate-400 font-bold z-10">
+                  <thead className="sticky top-0 bg-slate-100/90 backdrop-blur-md border-b border-slate-200 text-slate-600 font-syne font-extrabold uppercase tracking-wider z-10">
                     <tr>
-                      <th className="py-3 px-4">NO / ID</th>
-                      <th className="py-3 px-4">WAKTU & TANGGAL</th>
-                      <th className="py-3 px-4">KATEGORI TERDETEKSI</th>
-                      <th className="py-3 px-4">CONFIDENCE SCORE AI</th>
-                      <th className="py-3 px-4">SUDUT SERVO FLAP</th>
-                      <th className="py-3 px-4">STATUS</th>
+                      <th className="py-4 px-6">ID</th>
+                      <th className="py-4 px-6">WAKTU & TANGGAL</th>
+                      <th className="py-4 px-6">KATEGORI TERDETEKSI</th>
+                      <th className="py-4 px-6">SKOR CONFIDENCE AI</th>
+                      <th className="py-4 px-6">SUDUT FLAP SERVO</th>
+                      <th className="py-4 px-6">STATUS EKSEKUSI</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800 text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                     {filteredHistory.length > 0 ? (
                       filteredHistory.map((row) => (
-                        <tr key={row.id} className="hover:bg-slate-800/40 transition">
-                          <td className="py-3 px-4 font-mono font-bold text-slate-400">#{row.id}</td>
-                          <td className="py-3 px-4 font-mono text-slate-300">{row.timestamp}</td>
-                          <td className="py-3 px-4">
+                        <tr key={row.id} className="hover:bg-indigo-50/30 transition-colors">
+                          <td className="py-4 px-6 font-mono font-bold text-slate-400">#{row.id}</td>
+                          <td className="py-4 px-6 font-mono text-slate-600">{row.timestamp}</td>
+                          <td className="py-4 px-6">
                             <span
-                              className={`px-3 py-1 rounded-md font-bold text-[11px] ${
+                              className={`px-3 py-1 rounded-xl font-display font-extrabold text-[11px] border ${
                                 row.category === 'Organik'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : row.category === 'Anorganik'
-                                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                  ? 'bg-sky-50 text-sky-700 border-sky-200'
+                                  : 'bg-purple-50 text-purple-700 border-purple-200'
                               }`}
                             >
                               {row.category}
                             </span>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                          <td className="py-4 px-6">
+                            <span className="font-display font-black text-indigo-900 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-200/80">
                               {row.confidence}%
                             </span>
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-300">
+                          <td className="py-4 px-6 font-mono text-slate-700 font-bold">
                             {row.servo_angle}°
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Berhasil Tersortir
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center gap-1.5 text-emerald-700 font-display font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Berhasil Tersortir
                             </span>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="py-8 text-center text-slate-500">
-                          Tidak ada data yang cocok dengan pencarian / filter.
+                        <td colSpan="6" className="py-12 text-center text-slate-400 font-semibold font-display">
+                          Tidak ada data yang cocok dengan kriteria pencarian / filter.
                         </td>
                       </tr>
                     )}
@@ -721,75 +821,78 @@ export default function App() {
         {/* ============================== TAB 3: KONTROL MANUAL & DIAGNOSIS ============================== */}
         {activeTab === 'diagnosis' && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6 text-amber-400 shrink-0" />
+            {/* Alert Banner */}
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border border-amber-300/80 rounded-4xl p-6 flex items-center gap-5 glass-card">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
               <div>
-                <h3 className="text-sm font-bold text-amber-300 m-0">Fitur Diagnosis & Plan B Demo</h3>
-                <p className="text-xs text-slate-300 mt-0.5">
-                  Panel ini berfungsi untuk menguji komponen fisik satu per satu dan menjadi penyelamat jika terjadi kendala sensor / Wi-Fi saat demonstrasi langsung ke penguji.
+                <h3 className="text-lg font-display font-black text-amber-950 m-0">Fitur Diagnosis & Plan B Demo Penguji</h3>
+                <p className="text-xs text-amber-900/90 mt-1 leading-relaxed font-medium">
+                  Panel ini berguna untuk menguji pergerakan aktuator servo, memantau tangkapan kamera ESP32-CAM secara mandiri, dan menyediakan tombol bypass suntik data jika terjadi kendala pada sensor saat demonstrasi langsung.
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Box 1: Uji Manual Servo (Override Controls) */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg space-y-4">
+              {/* Box 1: Uji Manual Flap Servo */}
+              <div className="glass-card rounded-4xl p-7 sm:p-8 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-white m-0">1. Uji Manual Flap Servo</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Override langsung sudut motor servo SG90</p>
+                    <h3 className="text-lg font-display font-black text-slate-900 m-0">1. Uji Pengarah Flap Servo</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Uji coba langsung perputaran motor servo SG90</p>
                   </div>
-                  <div className="px-3 py-1 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-400 font-bold text-xs">
-                    Sudut Aktif: {statusData?.devices?.servo_current_angle ?? 30}°
+                  <div className="px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-900 font-display font-black text-xs">
+                    Sudut Aktif: {currentServoAngle}°
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="grid grid-cols-3 gap-3.5 pt-2">
                   <button
                     onClick={() => handleServoControl(0, 'Organik')}
-                    className="p-4 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-center transition group flex flex-col items-center gap-2"
+                    className="p-6 rounded-3xl bg-emerald-50/80 hover:bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 text-center transition cursor-pointer flex flex-col items-center gap-2 shadow-xs hover:shadow-md hover:scale-105"
                   >
-                    <span className="text-2xl font-black">0°</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Flap Organik</span>
-                    <span className="text-[10px] text-emerald-400/80">(Arah Kiri)</span>
+                    <span className="text-3xl font-display font-black text-emerald-700">0°</span>
+                    <span className="text-xs font-syne uppercase tracking-wider font-extrabold">Flap Organik</span>
+                    <span className="text-[11px] text-emerald-600 font-bold">(Arah Kiri)</span>
                   </button>
 
                   <button
                     onClick={() => handleServoControl(30, 'Residu')}
-                    className="p-4 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 text-center transition group flex flex-col items-center gap-2"
+                    className="p-6 rounded-3xl bg-purple-50/80 hover:bg-purple-100/80 border border-purple-200/80 text-purple-900 text-center transition cursor-pointer flex flex-col items-center gap-2 shadow-xs hover:shadow-md hover:scale-105"
                   >
-                    <span className="text-2xl font-black">30°</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Flap Residu</span>
-                    <span className="text-[10px] text-amber-400/80">(Posisi Tengah/Netral)</span>
+                    <span className="text-3xl font-display font-black text-purple-700">30°</span>
+                    <span className="text-xs font-syne uppercase tracking-wider font-extrabold">Flap Residu</span>
+                    <span className="text-[11px] text-purple-600 font-bold">(Posisi Tengah)</span>
                   </button>
 
                   <button
                     onClick={() => handleServoControl(70, 'Anorganik')}
-                    className="p-4 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 text-center transition group flex flex-col items-center gap-2"
+                    className="p-6 rounded-3xl bg-sky-50/80 hover:bg-sky-100/80 border border-sky-200/80 text-sky-900 text-center transition cursor-pointer flex flex-col items-center gap-2 shadow-xs hover:shadow-md hover:scale-105"
                   >
-                    <span className="text-2xl font-black">70°</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Flap Anorganik</span>
-                    <span className="text-[10px] text-blue-400/80">(Arah Kanan)</span>
+                    <span className="text-3xl font-display font-black text-sky-700">70°</span>
+                    <span className="text-xs font-syne uppercase tracking-wider font-extrabold">Flap Anorganik</span>
+                    <span className="text-[11px] text-sky-600 font-bold">(Arah Kanan)</span>
                   </button>
                 </div>
               </div>
 
               {/* Box 2: Uji Snapshot Kamera ESP32-CAM */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg space-y-4">
+              <div className="glass-card rounded-4xl p-7 sm:p-8 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-white m-0">2. Uji Kamera ESP32-CAM</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Frame snapshot foto terakhir yang dikirim kamera</p>
+                    <h3 className="text-lg font-display font-black text-slate-900 m-0">2. Frame Snapshot Kamera</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Tampilan tangkapan foto terakhir modul ESP32-CAM</p>
                   </div>
                   <button
                     onClick={handleRefreshCamera}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition"
+                    className="px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-display font-bold flex items-center gap-2 transition border border-slate-200 cursor-pointer"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" /> Refresh Frame
+                    <RefreshCw className="w-3.5 h-3.5 text-slate-500" /> Refresh Frame
                   </button>
                 </div>
 
-                <div className="aspect-video w-full bg-slate-950 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative group">
+                <div className="aspect-video w-full bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden flex items-center justify-center relative group shadow-inner">
                   <img
                     src={`${API_BASE}/api/camera/latest?t=${lastImageKey}`}
                     alt="Latest ESP32-CAM Frame"
@@ -798,22 +901,22 @@ export default function App() {
                       e.target.style.display = 'none';
                     }}
                   />
-                  <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-black/60 backdrop-blur text-[10px] text-slate-300 font-mono flex items-center gap-1.5">
-                    <Camera className="w-3 h-3 text-emerald-400" />
+                  <div className="absolute bottom-4 left-4 px-4 py-2 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-white/10 text-[11px] text-slate-300 font-mono font-bold flex items-center gap-2.5 shadow-lg">
+                    <Camera className="w-4 h-4 text-indigo-400" />
                     <span>OV2640 Resolution Mode: QVGA / VGA</span>
                   </div>
                 </div>
               </div>
 
               {/* Box 3: Quick Data Injector (Demo Saver) */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg space-y-4 lg:col-span-2">
+              <div className="glass-card rounded-4xl p-7 sm:p-8 space-y-5 lg:col-span-2">
                 <div>
-                  <h3 className="text-base font-bold text-white m-0 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-teal-400" />
+                  <h3 className="text-lg font-display font-black text-slate-900 m-0 flex items-center gap-2.5">
+                    <Sparkles className="w-5 h-5 text-indigo-600" />
                     3. Simulasi Sampah Masuk (Data Injector - Live Demo Saver)
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Jika saat demonstrasi sensor ultrasonik tidak mendeteksi sampah karena pantulan sudut atau pencahayaan ruangan, Anda dapat mengklik tombol ini secara instan di depan penguji untuk membuktikan seluruh sistem tetap berjalan mulus.
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed font-medium">
+                    Apabila sensor ultrasonik mengalami kendala pantulan objek atau pencahayaan ruangan saat demonstrasi langsung, gunakan tombol injeksi ini untuk mensimulasikan pemilahan otomatis secara instan.
                   </p>
                 </div>
 
@@ -821,27 +924,27 @@ export default function App() {
                   <button
                     disabled={isLoading}
                     onClick={() => handleInjectTrash('Organik')}
-                    className="py-4 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
+                    className="py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-extrabold text-sm shadow-md shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-2.5"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                     + Suntik Sampah Organik (0°)
                   </button>
 
                   <button
                     disabled={isLoading}
                     onClick={() => handleInjectTrash('Anorganik')}
-                    className="py-4 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2"
+                    className="py-4 px-6 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-display font-extrabold text-sm shadow-md shadow-sky-500/20 transition cursor-pointer flex items-center justify-center gap-2.5"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                     + Suntik Sampah Anorganik (70°)
                   </button>
 
                   <button
                     disabled={isLoading}
                     onClick={() => handleInjectTrash('Residu')}
-                    className="py-4 px-5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-amber-600/30 transition flex items-center justify-center gap-2"
+                    className="py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-display font-extrabold text-sm shadow-md shadow-purple-500/20 transition cursor-pointer flex items-center justify-center gap-2.5"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                     + Suntik Sampah Residu (30°)
                   </button>
                 </div>
@@ -849,11 +952,59 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* ============================== CLOSING CALLOUT BLOCK (Reference 1 & 2 & 3 Dark Banner Aesthetic) ============================== */}
+        <section className="rounded-5xl glass-card-dark text-white p-10 md:p-14 relative overflow-hidden shadow-2xl mt-12 border border-white/10">
+          {/* Ambient Glowing Orbs */}
+          <div className="absolute -top-20 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 max-w-4xl mx-auto text-center space-y-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-indigo-300 text-xs font-syne uppercase tracking-widest font-extrabold">
+              <Globe2 className="w-4 h-4 text-indigo-400" />
+              Smart Sustainable Waste Management
+            </div>
+
+            <h2 className="text-3xl sm:text-5xl font-display font-black tracking-tight text-white leading-tight">
+              KAMPUS & KOTA BERSIH DENGAN TEKNOLOGI IOT & AI
+            </h2>
+
+            <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-normal">
+              SmartSort menggabungkan kecerdasan buatan, mikrokontroler hemat daya ESP32, dan mekanisme diverter flap cerdas untuk mendukung ekosistem pemilahan sampah modern dari sumbernya.
+            </p>
+
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-display font-black text-xs transition shadow-lg shadow-indigo-500/30 cursor-pointer flex items-center gap-2"
+              >
+                Lihat Monitoring Aktif <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('history');
+                  fetchHistory();
+                }}
+                className="px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/15 text-white border border-white/20 font-display font-bold text-xs transition cursor-pointer"
+              >
+                Eksplorasi Basis Data Log
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-4 px-6 text-center text-xs text-slate-500">
-        SmartSort IoT System • SIJA Project • ESP32-CAM OV2640 & HC-SR04 & SG90 Flap Controller
+      {/* Footer (PAYROT Style Minimal Masterpiece Footer) */}
+      <footer className="border-t border-slate-200/80 bg-white/60 backdrop-blur-md py-6 px-6 mt-12 text-center text-xs text-slate-500 font-semibold">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-display font-black text-slate-900 text-sm">SMARTSORT</span>
+            <span>• SIJA IoT & AI Project</span>
+          </div>
+          <div className="text-slate-400 font-medium">
+            ESP32 Controller • ESP32-CAM OV2640 • Sensor DHT11 & MQ-135 • Servo SG90 Diverter
+          </div>
+        </div>
       </footer>
     </div>
   );
