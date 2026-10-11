@@ -37,7 +37,29 @@ import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = (import.meta.env.DEV
+  ? ''
+  : import.meta.env.VITE_API_BASE_URL || 'https://smartsort.ezzar.my.id'
+).replace(/\/+$/, '');
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { 'X-API-Key': import.meta.env.VITE_API_KEY }
+});
+
+const normalizeCategory = (category) => {
+  const normalized = String(category || '').toLowerCase();
+  if (normalized === 'organik') return 'Organik';
+  if (normalized === 'anorganik') return 'Anorganik';
+  if (normalized === 'residu') return 'Residu';
+  return category;
+};
+
+const normalizeHistoryItem = (item) => ({
+  ...item,
+  category: normalizeCategory(item.category),
+  confidence: Number(item.confidence) <= 1 ? Number(item.confidence) * 100 : item.confidence,
+  action: item.action || `Flap diarahkan ke ${item.servo_angle}°`
+});
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'history', 'diagnosis'
@@ -47,24 +69,73 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lastImageKey, setLastImageKey] = useState(Date.now());
+  const [cameraImageUrl, setCameraImageUrl] = useState('');
   const [actionMessage, setActionMessage] = useState(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  // Fetch status data periodically (polling 2 detik)
+  // Fetch production device status and sensor telemetry.
   const fetchStatus = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/status`);
-      setStatusData(res.data);
+      const [statusRes, telemetryRes] = await Promise.all([
+        api.get('/api/status'),
+        api.get('/api/telemetry')
+      ]);
+      const status = statusRes.data?.data ?? statusRes.data;
+      const telemetry = telemetryRes.data?.data ?? telemetryRes.data;
+      setStatusData((current) => ({
+        ...current,
+        summary: current?.summary ?? {
+          total_items: 0,
+          counts: { Organik: 0, Anorganik: 0, Residu: 0 },
+          percentages: { Organik: 0, Anorganik: 0, Residu: 0 }
+        },
+        capacities: {
+          Organik: status.bin_capacity?.organik ?? status.capacities?.Organik ?? 0,
+          Anorganik: status.bin_capacity?.anorganik ?? status.capacities?.Anorganik ?? 0,
+          Residu: status.bin_capacity?.residu ?? status.capacities?.Residu ?? 0
+        },
+        environment: {
+          temperature: telemetry.temperature_celsius ?? telemetry.temperature,
+          humidity: telemetry.humidity_percent ?? telemetry.humidity,
+          gas_value: telemetry.gas_mq135_raw ?? telemetry.gas_value,
+          gas_status: telemetry.air_quality_status ?? telemetry.gas_status
+        },
+        devices: {
+          ...current?.devices,
+          esp32_controller: status.esp32_controller || 'Online',
+          servo_current_angle: status.current_servo_angle ?? status.servo_current_angle ?? 30
+        }
+      }));
     } catch (err) {
       console.error('Error fetching status:', err);
     }
   };
 
-  // Fetch history
+  // Fetch history with the production API's nested response format.
   const fetchHistory = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/history`);
-      setHistoryData(res.data.data);
+      const res = await api.get('/api/history', { params: { limit: 100 } });
+      const history = res.data?.data ?? res.data;
+      const entries = (history.history ?? history.data ?? []).map(normalizeHistoryItem);
+      const counts = { Organik: 0, Anorganik: 0, Residu: 0 };
+      entries.forEach(({ category }) => {
+        if (category in counts) counts[category] += 1;
+      });
+      const total = Number(history.total_records ?? history.total ?? entries.length);
+
+      setHistoryData(entries);
+      setStatusData((current) => ({
+        ...current,
+        summary: {
+          total_items: total,
+          counts,
+          percentages: Object.fromEntries(Object.entries(counts).map(([category, count]) => [
+            category,
+            total ? Math.round((count / total) * 1000) / 10 : 0
+          ]))
+        },
+        recent_activity: entries.slice(0, 5)
+      }));
     } catch (err) {
       console.error('Error fetching history:', err);
     }
@@ -73,14 +144,33 @@ export default function App() {
   useEffect(() => {
     fetchStatus();
     fetchHistory();
-    const interval = setInterval(() => {
-      fetchStatus();
-      if (activeTab === 'history') {
-        fetchHistory();
-      }
-    }, 2000);
-    return () => clearInterval(interval);
+    const statusInterval = setInterval(fetchStatus, 2000);
+    const historyInterval = setInterval(fetchHistory, 10000);
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(historyInterval);
+    };
   }, [activeTab]);
+
+  useEffect(() => {
+    let objectUrl;
+    api.get('/api/camera/latest', { params: { t: lastImageKey }, responseType: 'blob' })
+      .then(async (res) => {
+        if (res.data.type.includes('json')) {
+          const payload = JSON.parse(await res.data.text());
+          setCameraImageUrl(payload.data?.image_base64 ?? '');
+          return;
+        }
+
+        objectUrl = URL.createObjectURL(res.data);
+        setCameraImageUrl(objectUrl);
+      })
+      .catch((err) => console.error('Error fetching camera image:', err));
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [lastImageKey]);
 
   const showToast = (msg, isError = false) => {
     setActionMessage({ msg, isError });
@@ -90,7 +180,7 @@ export default function App() {
   // Manual Servo Control
   const handleServoControl = async (angle, category) => {
     try {
-      await axios.post(`${API_BASE}/api/manual/servo`, { angle, category });
+      await api.post('/api/manual/servo', { angle });
       showToast(`Flap berhasil diarahkan ke ${angle}° (${category})`);
       fetchStatus();
     } catch (err) {
@@ -102,13 +192,10 @@ export default function App() {
   const handleInjectTrash = async (category) => {
     try {
       setIsLoading(true);
-      const res = await axios.post(`${API_BASE}/api/manual/inject`, {
-        category,
-        confidence: Math.floor(Math.random() * (98 - 88 + 1)) + 88 + Math.random()
-      });
-      showToast(`Berhasil menyuntikkan sampel ${category} (${res.data.entry.confidence}%)`);
-      fetchStatus();
+      await api.post('/api/manual/inject', { category: category.toLowerCase() });
+      showToast(`Berhasil menyuntikkan sampel ${category}`);
       fetchHistory();
+      fetchStatus();
     } catch (err) {
       showToast('Gagal menyuntikkan data', true);
     } finally {
@@ -118,25 +205,35 @@ export default function App() {
 
   // Reset All History & Stats
   const handleResetHistory = async () => {
-    try {
-      await axios.delete(`${API_BASE}/api/history`);
-      setIsResetModalOpen(false);
-      showToast('Seluruh riwayat dan counter berhasil direset ke 0');
-      fetchStatus();
-      fetchHistory();
-    } catch (err) {
-      showToast('Gagal mereset data', true);
-    }
+    setIsResetModalOpen(false);
+    showToast('Endpoint reset riwayat tidak tersedia pada API production', true);
   };
 
   // Reset Container Capacities
   const handleResetBin = async (category = null) => {
     try {
-      await axios.post(`${API_BASE}/api/bins/reset`, { category });
+      await api.post('/api/bins/reset');
       showToast(category ? `Kapasitas wadah ${category} direset ke 0%` : 'Semua kompartemen berhasil dikosongkan!');
       fetchStatus();
     } catch (err) {
       showToast('Gagal mereset wadah', true);
+    }
+  };
+
+  const handleExportHistory = async (event) => {
+    event.preventDefault();
+    try {
+      const res = await api.get('/api/history/export', { params: { format: 'csv' } });
+      const payload = res.data?.data ?? res.data;
+      const downloadBlob = new Blob([payload.content], { type: 'text/csv;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(downloadBlob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = payload.filename || 'smartsort_history.csv';
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch {
+      showToast('Gagal mengunduh riwayat', true);
     }
   };
 
@@ -156,7 +253,7 @@ export default function App() {
           statusData?.summary?.counts?.Anorganik || 0,
           statusData?.summary?.counts?.Residu || 0
         ],
-        backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6'],
+        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
         borderColor: ['#ffffff', '#ffffff', '#ffffff'],
         borderWidth: 3,
         hoverOffset: 6
@@ -390,7 +487,7 @@ export default function App() {
 
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                       <span className="font-medium text-slate-600">Anorganik</span>
                     </div>
                     <span className="font-semibold text-slate-900 tabular-nums">
@@ -400,7 +497,7 @@ export default function App() {
 
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                       <span className="font-medium text-slate-600">Residu</span>
                     </div>
                     <span className="font-semibold text-slate-900 tabular-nums">
@@ -455,7 +552,7 @@ export default function App() {
                 {/* Camera Frame Preview Container */}
                 <div className="mt-3 sm:mt-4 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video relative group flex items-center justify-center shadow-inner">
                   <img
-                    src={`${API_BASE}/api/camera/latest?t=${lastImageKey}`}
+                    src={cameraImageUrl || null}
                     alt="ESP32-CAM Frame"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -514,7 +611,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="text-center shrink-0">
-                    <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 30 ? 'text-purple-400' : 'text-slate-400'}`}>30°</div>
+                    <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 30 ? 'text-rose-400' : 'text-slate-400'}`}>30°</div>
                     <div className="text-[9px] sm:text-[10px] text-slate-400">Residu</div>
                   </div>
                   <div className="flex-1 px-1 sm:px-2 flex items-center justify-center">
@@ -523,7 +620,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="text-center shrink-0">
-                    <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 70 ? 'text-sky-400' : 'text-slate-400'}`}>70°</div>
+                    <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 70 ? 'text-amber-400' : 'text-slate-400'}`}>70°</div>
                     <div className="text-[9px] sm:text-[10px] text-slate-400">Anorganik</div>
                   </div>
                 </div>
@@ -640,17 +737,17 @@ export default function App() {
                       {['Organik', 'Anorganik', 'Residu'].map((cat) => {
                         const cap = statusData?.capacities?.[cat] ?? 0;
                         const statusColor = getCapacityColor(cap);
-                        const catBadge =
+                        const categoryColor =
                           cat === 'Organik'
-                            ? 'border-emerald-200/80 text-emerald-700 bg-emerald-50'
+                            ? { badge: 'border-emerald-200/80 text-emerald-700 bg-emerald-50', bar: 'bg-emerald-500' }
                             : cat === 'Anorganik'
-                            ? 'border-sky-200/80 text-sky-700 bg-sky-50'
-                            : 'border-purple-200/80 text-purple-700 bg-purple-50';
+                            ? { badge: 'border-amber-200/80 text-amber-700 bg-amber-50', bar: 'bg-amber-500' }
+                            : { badge: 'border-rose-200/80 text-rose-700 bg-rose-50', bar: 'bg-rose-500' };
 
                         return (
                           <div key={cat} className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
                             <div className="flex justify-between items-center text-xs">
-                              <span className={`px-2.5 py-0.5 rounded-lg font-semibold border ${catBadge}`}>
+                              <span className={`px-2.5 py-0.5 rounded-lg font-semibold border ${categoryColor.badge}`}>
                                 Wadah {cat}
                               </span>
                               <div className="flex items-center gap-2">
@@ -662,7 +759,7 @@ export default function App() {
                             </div>
                             <div className="w-full bg-slate-200/70 rounded-full h-2.5 sm:h-3 overflow-hidden p-0.5">
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${statusColor.bar}`}
+                                className={`h-full rounded-full transition-all duration-500 ${categoryColor.bar}`}
                                 style={{ width: `${Math.min(100, Math.max(cap, 4))}%` }}
                               />
                             </div>
@@ -703,17 +800,17 @@ export default function App() {
                       </span>
                       <span className="text-emerald-600 text-[10px] font-medium">Organik</span>
                     </div>
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-sky-50/70 border border-sky-100">
-                      <span className="text-sky-700 font-semibold block text-xs sm:text-sm tabular-nums">
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+                      <span className="text-amber-700 font-semibold block text-xs sm:text-sm tabular-nums">
                         {statusData?.summary?.percentages?.Anorganik ?? 0}%
                       </span>
-                      <span className="text-sky-600 text-[10px] font-medium">Anorganik</span>
+                      <span className="text-amber-600 text-[10px] font-medium">Anorganik</span>
                     </div>
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-purple-50/70 border border-purple-100">
-                      <span className="text-purple-700 font-semibold block text-xs sm:text-sm tabular-nums">
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50/70 border border-rose-100">
+                      <span className="text-rose-700 font-semibold block text-xs sm:text-sm tabular-nums">
                         {statusData?.summary?.percentages?.Residu ?? 0}%
                       </span>
-                      <span className="text-purple-600 text-[10px] font-medium">Residu</span>
+                      <span className="text-rose-600 text-[10px] font-medium">Residu</span>
                     </div>
                   </div>
                 </div>
@@ -755,8 +852,8 @@ export default function App() {
                                   item.category === 'Organik'
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                     : item.category === 'Anorganik'
-                                    ? 'bg-sky-50 text-sky-700 border-sky-200'
-                                    : 'bg-purple-50 text-purple-700 border-purple-200'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : 'bg-rose-50 text-rose-700 border-rose-200'
                                 }`}
                               >
                                 {item.category}
@@ -803,7 +900,8 @@ export default function App() {
 
                   <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                     <a
-                      href={`${API_BASE}/api/history/export`}
+                      href={`${API_BASE}/api/history/export?format=csv`}
+                      onClick={handleExportHistory}
                       className="px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-blue-600/20 cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5" /> Unduh CSV
@@ -877,8 +975,8 @@ export default function App() {
                                   row.category === 'Organik'
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                     : row.category === 'Anorganik'
-                                    ? 'bg-sky-50 text-sky-700 border-sky-200'
-                                    : 'bg-purple-50 text-purple-700 border-purple-200'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : 'bg-rose-50 text-rose-700 border-rose-200'
                                 }`}
                               >
                                 {row.category}
@@ -954,20 +1052,20 @@ export default function App() {
 
                     <button
                       onClick={() => handleServoControl(30, 'Residu')}
-                      className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95"
+                      className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95"
                     >
-                      <span className="text-xl sm:text-2xl font-bold text-purple-700 tabular-nums">30°</span>
-                      <span className="text-[11px] sm:text-xs font-semibold text-purple-900 truncate w-full">Residu</span>
-                      <span className="text-[9px] sm:text-[10px] text-purple-600 font-medium">(Tengah)</span>
+                      <span className="text-xl sm:text-2xl font-bold text-rose-700 tabular-nums">30°</span>
+                      <span className="text-[11px] sm:text-xs font-semibold text-rose-900 truncate w-full">Residu</span>
+                      <span className="text-[9px] sm:text-[10px] text-rose-600 font-medium">(Tengah)</span>
                     </button>
 
                     <button
                       onClick={() => handleServoControl(70, 'Anorganik')}
-                      className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95"
+                      className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95"
                     >
-                      <span className="text-xl sm:text-2xl font-bold text-sky-700 tabular-nums">70°</span>
-                      <span className="text-[11px] sm:text-xs font-semibold text-sky-900 truncate w-full">Anorganik</span>
-                      <span className="text-[9px] sm:text-[10px] text-sky-600 font-medium">(Kanan)</span>
+                      <span className="text-xl sm:text-2xl font-bold text-amber-700 tabular-nums">70°</span>
+                      <span className="text-[11px] sm:text-xs font-semibold text-amber-900 truncate w-full">Anorganik</span>
+                      <span className="text-[9px] sm:text-[10px] text-amber-600 font-medium">(Kanan)</span>
                     </button>
                   </div>
                 </div>
@@ -989,7 +1087,7 @@ export default function App() {
 
                   <div className="aspect-video w-full bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center relative shadow-inner">
                     <img
-                      src={`${API_BASE}/api/camera/latest?t=${lastImageKey}`}
+                      src={cameraImageUrl || null}
                       alt="Latest ESP32-CAM Frame"
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -1028,7 +1126,7 @@ export default function App() {
                     <button
                       disabled={isLoading}
                       onClick={() => handleInjectTrash('Anorganik')}
-                      className="py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs shadow-md shadow-sky-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                      className="py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-md shadow-amber-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                     >
                       <Trash2 className="w-4 h-4" />
                       + Suntik Sampah Anorganik (70°)
@@ -1037,7 +1135,7 @@ export default function App() {
                     <button
                       disabled={isLoading}
                       onClick={() => handleInjectTrash('Residu')}
-                      className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs shadow-md shadow-purple-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                      className="py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-md shadow-rose-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                     >
                       <Trash2 className="w-4 h-4" />
                       + Suntik Sampah Residu (30°)
