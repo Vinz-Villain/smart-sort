@@ -36,9 +36,14 @@ D:\smart_sort\
 | | `GND` | `GND` | Ground bersama |
 | | `TRIG` | `GPIO 13` | Sinyal pulsa trigger |
 | | `ECHO` | `GPIO 12` | Gunakan voltage divider ke 3.3V jika HC-SR04 tipe 5V |
-| **Servo SG90** | `VCC` (Merah) | `5V` | Disarankan adaptor 5V 2A stabil |
-| | `GND` (Cokelat) | `GND` | Ground bersama |
+| **Servo flap SG90** | `VCC` (Merah) | `5V` eksternal | Gunakan catu daya servo yang stabil dan satukan GND dengan ESP32-CAM |
+| | `GND` (Cokelat) | `GND` bersama | Ground bersama |
 | | `PWM` (Oranye) | `GPIO 14` | Sinyal kendali sudut flap |
+| **Servo pendorong SG90** | `VCC` (Merah) | `5V` eksternal | Sebaiknya gunakan catu daya servo yang sama dan cukup arus |
+| | `GND` (Cokelat) | `GND` bersama | Ground bersama ESP32-CAM |
+| | `PWM` (Oranye) | `GPIO 4` | GPIO22 dipakai kamera sebagai PCLK; GPIO4 juga terhubung ke LED flash |
+
+> Pindahkan kabel sinyal servo pendorong dari GPIO22 ke GPIO4. Jangan gunakan GPIO22 untuk servo karena pin itu diperlukan kamera.
 
 ### Sudut Flap Diverter (Sesuai Desain 3D):
 * **0°** : Menghadap ke **Organik** (Kiri)

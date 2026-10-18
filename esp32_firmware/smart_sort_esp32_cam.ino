@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * PROYEK: SMARTSORT IoT - ESP32-CAM + HC-SR04 + SERVO SG90
+ * PROYEK: SMARTSORT IoT - ESP32-CAM + HC-SR04 + DUA SERVO SG90
  * ==============================================================================
  * Fungsi:
  * 1. Membaca sensor Ultrasonik HC-SR04 di corong input.
@@ -13,7 +13,8 @@
  *    - Organik   : 0°
  *    - Residu    : 30°
  *    - Anorganik : 70°
- * 5. Memberi jeda 2.5 detik agar sampah jatuh ke wadah, lalu mengembalikan flap ke netral.
+ * 5. Menunggu flap sampai di posisi tujuan, mendorong sampah, lalu mengembalikan
+ *    pendorong dan flap ke posisi siaga.
  * ==============================================================================
  */
 
@@ -33,14 +34,22 @@ const char* serverUrl = "http://192.168.1.100:8000/api/classify"; // Ganti IP de
 #define TRIG_PIN 13
 #define ECHO_PIN 12
 
-// Servo Motor SG90
-#define SERVO_PIN 14
+// Servo flap/pemilah dan servo pendorong
+#define FLAP_SERVO_PIN 14
+// GPIO22 dipakai kamera sebagai PCLK pada ESP32-CAM AI Thinker.
+// Gunakan GPIO4 untuk pendorong (pin LED flash; LED flash tidak dipakai di sini).
+#define PUSHER_SERVO_PIN 4
 
 // Ambang batas jarak sensor ultrasonik (cm)
 #define DISTANCE_THRESHOLD_CM 20.0
 #define NEUTRAL_SERVO_ANGLE 30 // Posisi netral / tengah
+#define PUSHER_REST_ANGLE 0
+#define PUSHER_EXTEND_ANGLE 90
+#define FLAP_SETTLE_MS 2500
+#define PUSHER_HOLD_MS 500
 
 Servo flapServo;
+Servo pusherServo;
 
 // ==================== PIN CAMERA MODEL AI THINKER ====================
 #define PWDN_GPIO_NUM     32
@@ -148,9 +157,12 @@ void setup() {
   // Inisialisasi Servo
   ESP32PWM::allocateTimer(0);
   flapServo.setPeriodHertz(50); // Standar 50Hz servo
-  flapServo.attach(SERVO_PIN, 500, 2400);
+  flapServo.attach(FLAP_SERVO_PIN, 500, 2400);
   flapServo.write(NEUTRAL_SERVO_ANGLE); // Set posisi netral awal
-  Serial.println("[INFO] Servo diatur ke posisi Netral");
+  pusherServo.setPeriodHertz(50);
+  pusherServo.attach(PUSHER_SERVO_PIN, 500, 2400);
+  pusherServo.write(PUSHER_REST_ANGLE);
+  Serial.println("[INFO] Flap dan pendorong diatur ke posisi siaga");
 
   // Inisialisasi Kamera
   camera_config_t config;
@@ -241,8 +253,14 @@ void loop() {
         Serial.printf("[AKSI] Kategori: %s -> Gerakkan Flap Servo ke %d°\n", category.c_str(), targetAngle);
         flapServo.write(targetAngle);
 
-        // Tunggu 2.5 detik agar sampah meluncur masuk ke kompartemen
-        delay(2500);
+        // Beri waktu flap bergerak sebelum pendorong mendorong sampah.
+        delay(FLAP_SETTLE_MS);
+
+        Serial.println("[AKSI] Pendorong maju");
+        pusherServo.write(PUSHER_EXTEND_ANGLE);
+        delay(PUSHER_HOLD_MS);
+        pusherServo.write(PUSHER_REST_ANGLE);
+        delay(500); // Pastikan pendorong kembali sebelum flap dinetralkan.
 
         // Kembalikan ke posisi netral
         flapServo.write(NEUTRAL_SERVO_ANGLE);
