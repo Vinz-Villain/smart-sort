@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Gauge, BarChart3, Sliders } from 'lucide-react';
 
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import Toast from './components/common/Toast';
 import ResetModal from './components/common/ResetModal';
+import PinModal from './components/common/PinModal';
+import TabSwitcher from './components/common/TabSwitcher';
 import HeroSection from './components/hero/HeroSection';
 import ShowcaseCards from './components/hero/ShowcaseCards';
 import MonitoringTab from './components/tabs/MonitoringTab';
 import HistoryTab from './components/tabs/HistoryTab';
 import DiagnosisTab from './components/tabs/DiagnosisTab';
 import { smartSortApi } from './api/smartSortApi';
+import { useAdminAuth } from './hooks/useAdminAuth';
+import { getChartData, chartOptions } from './utils/chartConfig';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'history', 'diagnosis'
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [statusData, setStatusData] = useState(null);
   const [historyData, setHistoryData] = useState([]);
   const [filterCategory, setFilterCategory] = useState('All');
@@ -26,6 +29,10 @@ export default function App() {
   const [cameraImageUrl, setCameraImageUrl] = useState('');
   const [actionMessage, setActionMessage] = useState(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+
+  const { isAuthenticated, verifyPin, logout } = useAdminAuth();
 
   const showToast = useCallback((msg, isError = false) => {
     setActionMessage({ msg, isError });
@@ -45,10 +52,7 @@ export default function App() {
         },
         capacities: data.capacities,
         environment: data.environment,
-        devices: {
-          ...current?.devices,
-          ...data.devices
-        }
+        devices: { ...current?.devices, ...data.devices }
       }));
     } catch (err) {
       console.error('Error fetching status:', err);
@@ -101,6 +105,38 @@ export default function App() {
       if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
     };
   }, [lastImageKey]);
+
+  // Guard critical operations with 6-digit PIN authentication
+  const requireAuth = useCallback(
+    (actionCallback) => {
+      if (isAuthenticated) {
+        actionCallback();
+      } else {
+        setPendingAction(() => actionCallback);
+        setIsPinModalOpen(true);
+      }
+    },
+    [isAuthenticated]
+  );
+
+  const handleVerifyPin = (inputPin) => {
+    const isSuccess = verifyPin(inputPin);
+    if (isSuccess) {
+      showToast('Akses Operator Berhasil Dibuka!');
+      setIsPinModalOpen(false);
+      if (pendingAction) {
+        pendingAction();
+        setPendingAction(null);
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const handleLogout = () => {
+    logout();
+    showToast('Sesi Operator Dikunci (Mode Tamu)');
+  };
 
   // Action handlers
   const handleServoControl = async (angle, category) => {
@@ -160,7 +196,6 @@ export default function App() {
     showToast('Snapshot frame kamera diperbarui');
   };
 
-  // Filter history data
   const filteredHistory = historyData.filter((item) => {
     const matchesCategory = filterCategory === 'All' || item.category === filterCategory;
     const matchesSearch =
@@ -170,52 +205,23 @@ export default function App() {
     return matchesCategory && matchesSearch;
   });
 
-  // Chart Data preparation
-  const chartData = {
-    labels: ['Organik', 'Anorganik', 'Residu'],
-    datasets: [
-      {
-        data: [
-          statusData?.summary?.counts?.Organik || 0,
-          statusData?.summary?.counts?.Anorganik || 0,
-          statusData?.summary?.counts?.Residu || 0
-        ],
-        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
-        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
-        borderWidth: 3,
-        hoverOffset: 6
-      }
-    ]
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          color: '#475569',
-          font: { size: 12, weight: '600', family: 'Plus Jakarta Sans' },
-          padding: 14,
-          boxWidth: 10,
-          usePointStyle: true
-        }
-      }
-    },
-    cutout: '72%'
-  };
-
   return (
     <div className="min-h-screen bg-[#F8FAFD] text-slate-800 font-sans selection:bg-blue-600 selection:text-white flex flex-col">
-      {/* Toast Notification */}
       <Toast message={actionMessage} />
 
-      {/* Confirmation Reset Modal */}
       <ResetModal
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onConfirm={handleResetHistory}
+      />
+
+      <PinModal
+        isOpen={isPinModalOpen}
+        onClose={() => {
+          setIsPinModalOpen(false);
+          setPendingAction(null);
+        }}
+        onVerify={handleVerifyPin}
       />
 
       {/* Hero Header Section */}
@@ -230,10 +236,13 @@ export default function App() {
               if (tab === 'history') fetchHistory();
             }}
             statusData={statusData}
-            onOpenResetModal={() => setIsResetModalOpen(true)}
+            onOpenResetModal={() => requireAuth(() => setIsResetModalOpen(true))}
+            isAuthenticated={isAuthenticated}
+            onOpenPinModal={() => setIsPinModalOpen(true)}
+            onLogout={handleLogout}
           />
 
-          <HeroSection onInjectSimulation={() => handleInjectTrash('Organik')} />
+          <HeroSection onInjectSimulation={() => requireAuth(() => handleInjectTrash('Organik'))} />
 
           <ShowcaseCards
             statusData={statusData}
@@ -243,6 +252,8 @@ export default function App() {
               setActiveTab(tab);
               if (tab === 'history') fetchHistory();
             }}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={requireAuth}
           />
         </div>
       </section>
@@ -250,67 +261,27 @@ export default function App() {
       {/* Operation Control & Tab Section */}
       <section className="bg-[#F8FAFD] py-8 sm:py-14 flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-6 sm:space-y-8">
-          {/* View Switcher Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 m-0">
-                {activeTab === 'dashboard' && 'Panel Monitoring & Keterisian Wadah'}
-                {activeTab === 'history' && 'Tabel Dataset Riwayat Penyortiran'}
-                {activeTab === 'diagnosis' && 'Panel Diagnostik & Pengujian Manual'}
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {activeTab === 'dashboard' && 'Status kapasitas fisik wadah dan proporsi klasifikasi'}
-                {activeTab === 'history' && 'Log rekaman riwayat deteksi objek dan akurasi model'}
-                {activeTab === 'diagnosis' && 'Kontrol sudut aktuator servo SG90 dan demonstrasi simulasi'}
-              </p>
-            </div>
+          <TabSwitcher
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onTabChange={(tab) => {
+              if (tab === 'history') fetchHistory();
+            }}
+            historyCount={historyData.length}
+          />
 
-            {/* Segmented Pill Tabs */}
-            <div className="w-full sm:w-auto grid grid-cols-3 sm:flex items-center gap-1 bg-slate-200/70 p-1 rounded-2xl border border-slate-300/60">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`py-2 px-3 sm:px-4 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'dashboard' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Gauge className="w-3.5 h-3.5" />
-                <span>Monitoring</span>
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('history');
-                  fetchHistory();
-                }}
-                className={`py-2 px-3 sm:px-4 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'history' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>Riwayat ({historyData.length})</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('diagnosis')}
-                className={`py-2 px-3 sm:px-4 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'diagnosis' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>Diagnostik</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Views */}
           {activeTab === 'dashboard' && (
             <MonitoringTab
               statusData={statusData}
-              chartData={chartData}
+              chartData={getChartData(statusData)}
               chartOptions={chartOptions}
               onResetBins={() => handleResetBin(null)}
               onNavigateTab={(tab) => {
                 setActiveTab(tab);
                 if (tab === 'history') fetchHistory();
               }}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={requireAuth}
             />
           )}
 
@@ -323,6 +294,8 @@ export default function App() {
               setSearchQuery={setSearchQuery}
               onExportCsv={handleExportHistory}
               onOpenResetModal={() => setIsResetModalOpen(true)}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={requireAuth}
             />
           )}
 
@@ -334,12 +307,13 @@ export default function App() {
               onServoControl={handleServoControl}
               onRefreshCamera={handleRefreshCamera}
               onInjectTrash={handleInjectTrash}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={requireAuth}
             />
           )}
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

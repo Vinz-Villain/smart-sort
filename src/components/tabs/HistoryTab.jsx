@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, RotateCcw, Filter, Search, CheckCircle2 } from 'lucide-react';
+import { Download, RotateCcw, Filter, Search, CheckCircle2, Lock } from 'lucide-react';
 import { API_BASE } from '../../api/client';
 
 export default function HistoryTab({
@@ -9,8 +9,14 @@ export default function HistoryTab({
   searchQuery,
   setSearchQuery,
   onExportCsv,
-  onOpenResetModal
+  onOpenResetModal,
+  isAuthenticated,
+  onRequireAuth
 }) {
+  const handleResetLogClick = () => {
+    onRequireAuth(onOpenResetModal);
+  };
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200/80 shadow-sm">
@@ -31,10 +37,12 @@ export default function HistoryTab({
               <Download className="w-3.5 h-3.5" /> Unduh CSV
             </a>
             <button
-              onClick={onOpenResetModal}
+              onClick={handleResetLogClick}
               className="px-3.5 sm:px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset Log
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Log</span>
+              {!isAuthenticated && <Lock className="w-3 h-3 text-rose-500" />}
             </button>
           </div>
         </div>

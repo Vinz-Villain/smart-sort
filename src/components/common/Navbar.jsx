@@ -1,7 +1,16 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Lock, Unlock, ShieldCheck, User } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, onTabChange, statusData, onOpenResetModal }) {
+export default function Navbar({
+  activeTab,
+  setActiveTab,
+  onTabChange,
+  statusData,
+  onOpenResetModal,
+  isAuthenticated,
+  onOpenPinModal,
+  onLogout
+}) {
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     if (onTabChange) onTabChange(tab);
@@ -49,17 +58,42 @@ export default function Navbar({ activeTab, setActiveTab, onTabChange, statusDat
         </button>
       </div>
 
-      {/* Right Status & Action */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-white/5 border border-white/10 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-sm">
-          <span className="font-medium text-[11px] hidden sm:inline">
+      {/* Right Controls & Auth Badge */}
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* ESP32 Status */}
+        <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 bg-white/5 border border-white/10 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
+          <span className="font-medium text-[11px]">
             ESP32: {statusData?.devices?.esp32_controller || 'Online'}
           </span>
-          <span className="font-medium text-[11px] sm:hidden">Online</span>
         </div>
+
+        {/* Auth State Button */}
+        {isAuthenticated ? (
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 text-xs font-medium backdrop-blur-sm transition cursor-pointer shadow-sm"
+            title="Klik untuk mengunci kembali ke Mode Tamu"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-[11px] font-semibold">Operator</span>
+            <Unlock className="w-3 h-3 text-emerald-400 opacity-80" />
+          </button>
+        ) : (
+          <button
+            onClick={onOpenPinModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-slate-200 text-xs font-medium backdrop-blur-sm transition cursor-pointer"
+            title="Klik untuk membuka akses kontrol operator via PIN"
+          >
+            <User className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-[11px] font-medium hidden sm:inline">Mode Tamu</span>
+            <Lock className="w-3 h-3 text-amber-300" />
+          </button>
+        )}
+
+        {/* Reset Trigger */}
         <button
           onClick={onOpenResetModal}
-          className="px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition shadow-md shadow-blue-600/30 cursor-pointer shrink-0"
+          className="px-3.5 sm:px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition shadow-md shadow-blue-600/30 cursor-pointer shrink-0"
         >
           Reset
         </button>

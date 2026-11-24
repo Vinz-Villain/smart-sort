@@ -1,11 +1,13 @@
 import React from 'react';
-import { Sparkles, RefreshCw, ArrowRight, Send } from 'lucide-react';
+import { Sparkles, RefreshCw, ArrowRight, Send, Lock } from 'lucide-react';
 
 export default function ShowcaseCards({
   statusData,
   cameraImageUrl,
   onRefreshCamera,
-  onNavigateTab
+  onNavigateTab,
+  isAuthenticated,
+  onRequireAuth
 }) {
   const currentServoAngle = statusData?.devices?.servo_current_angle ?? 30;
   const currentCategoryActive =
@@ -113,24 +115,40 @@ export default function ShowcaseCards({
             <img
               src={cameraImageUrl || null}
               alt="ESP32-CAM Frame"
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover transition-all duration-300 ${
+                !isAuthenticated ? 'blur-sm opacity-50 scale-105' : ''
+              }`}
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
             />
             <div className="absolute inset-0 border border-blue-400/40 pointer-events-none rounded-xl sm:rounded-2xl" />
-            <div className="absolute top-2 right-2">
-              <button
-                onClick={onRefreshCamera}
-                className="p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition cursor-pointer"
-                title="Refresh Frame"
-              >
-                <RefreshCw className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/60 text-[10px] text-white backdrop-blur-md font-mono">
-              OV2640: Live Stream
-            </div>
+
+            {!isAuthenticated ? (
+              <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
+                <button
+                  onClick={() => onRequireAuth(onRefreshCamera)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-white text-[11px] font-semibold flex items-center gap-1.5 border border-white/20 shadow-md backdrop-blur-md transition cursor-pointer"
+                >
+                  <Lock className="w-3 h-3 text-amber-300" /> Buka Kamera (PIN)
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="absolute top-2 right-2">
+                  <button
+                    onClick={onRefreshCamera}
+                    className="p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition cursor-pointer"
+                    title="Refresh Frame"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/60 text-[10px] text-white backdrop-blur-md font-mono">
+                  OV2640: Live Stream
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -158,7 +176,7 @@ export default function ShowcaseCards({
             </p>
           </div>
 
-          {/* Dotted Trajectory Path (Mobile-Safe Layout) */}
+          {/* Dotted Trajectory Path */}
           <div className="my-4 sm:my-5 p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
             <div className="text-center shrink-0">
               <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 0 ? 'text-emerald-400' : 'text-slate-400'}`}>0°</div>
