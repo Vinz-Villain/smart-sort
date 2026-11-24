@@ -1,105 +1,144 @@
-# ♻️ SmartSort - IoT & AI Smart Waste Classifier
+# ♻️ SmartSort - IoT & AI Smart Waste Classifier (Frontend Web Dashboard)
 
-Sistem pemilah sampah pintar otomatis berbasis **ESP32-CAM**, sensor ultrasonik **HC-SR04**, **Servo Motor SG90**, dan **Computer Vision AI Server (FastAPI)** dengan **Dashboard Monitoring React (Tailwind CSS)**.
+Dashboard monitoring dan kontrol interaktif berbasis web untuk sistem pemilah sampah pintar **SmartSort IoT & AI**. Dibangun menggunakan **React 19**, **Vite**, **Tailwind CSS**, dan **Chart.js** dengan arsitektur murni antarmuka (*Pure Frontend SPA*).
 
 ---
 
-## 📁 Struktur Direktori
+## 🏗️ Arsitektur Sistem Terpisah (Decoupled Architecture)
+
+Proyek SmartSort diorganisasikan ke dalam repositori independen yang terpisah:
+
+```mermaid
+graph LR
+    subgraph Frontend["smart-sort (Repositori Ini)"]
+        UI["React SPA Dashboard (Vite + Tailwind)"]
+    end
+
+    subgraph Backend["smartsort-backend (Repositori API)"]
+        API["FastAPI AI Engine + PostgreSQL + YOLOv8"]
+    end
+
+    subgraph Firmware["smartsort-firmware (Repositori Hardware)"]
+        ESP["ESP32-CAM (OV2640 + HC-SR04 + Servo SG90)"]
+    end
+
+    ESP -->|POST /api/classify| API
+    UI -->|REST API & Telemetry Polling| API
+```
+
+1. **`smart-sort` (Repositori Ini)**: Web dashboard antarmuka pengguna, visualisasi telemetri, tabel riwayat, dan panel diagnosis manual.
+2. **`smartsort-backend`**: Backend produksi REST API, inferensi model YOLOv8, dan persistensi database PostgreSQL.
+3. **`smartsort-firmware`**: Kode mikrokontroler Arduino ESP32-CAM (`.ino`).
+
+---
+
+## 🎯 Fitur Dashboard Web
+
+1. **Panel Monitoring (Real-Time)**:
+   - Tiga kartu showcase bento: Total sampah terpilah, pratinjau scanner AI kamera OV2640, status sudut servo flap (0° Organik, 30° Residu, 70° Anorganik).
+   - Indikator ketinggian kapasitas fisik 3 kompartemen wadah (*Tersedia*, *Waspada*, *Penuh*) beserta tombol *Kosongkan Wadah*.
+   - Diagram proporsi pengelompokan sampah (*Doughnut Chart*).
+   - Tabel aktivitas 5 pemilahan terbaru secara real-time.
+
+2. **Riwayat & Dataset Pemilahan**:
+   - Tabel rekaman dataset penyortiran lengkap (ID, timestamp, kategori, confidence score AI, sudut servo).
+   - Filter cepat berdasarkan kategori (*All, Organik, Anorganik, Residu*) dan pencarian instan (*search by keyword/ID*).
+   - Ekspor laporan ke format **CSV**.
+   - Tombol dialog konfirmasi reset log.
+
+3. **Panel Diagnostik & Pengujian Manual (Plan B / Demo Saver)**:
+   - **Manual Servo Override**: Menggerakkan flap ke 0° (Organik), 30° (Residu), dan 70° (Anorganik) secara langsung.
+   - **Camera Snapshot**: Memperbarui dan menampilkan jepretan kamera terakhir dari ESP32-CAM.
+   - **Data Injector**: Menyuntikkan sampel sampah simulasi untuk demo langsung tanpa menunggu sensor fisik.
+
+---
+
+## 📁 Struktur Direktori Proyek
 
 ```text
-D:\smart_sort\
-├── backend\
-│   ├── main.py              # REST API FastAPI + Handler Klasifikasi AI
-│   ├── requirements.txt     # Dependensi Python
-│   └── static\              # Direktori penyimpanan snapshot foto kamera terbaru
-├── frontend\
-│   ├── src\
-│   │   ├── App.jsx          # Dashboard React 3 Tab (Live, History, Diagnosis)
-│   │   ├── main.jsx         # Entry point React Vite
-│   │   └── index.css        # Tailwind CSS
-│   ├── package.json
-│   └── tailwind.config.js
-├── esp32_firmware\
-│   └── smart_sort_esp32_cam.ino # Kode Arduino ESP32-CAM (Kamera + Ultrasonik + Servo)
-├── run_backend.bat          # Double-click untuk jalankan server backend
-├── run_frontend.bat         # Double-click untuk jalankan dashboard website
-└── README.md
+smart-sort/
+├── docs/
+│   └── DESIGN.md               # Arsip spesifikasi desain antarmuka
+├── public/                     # Aset publik statis (favicon, svg icon)
+├── src/
+│   ├── api/
+│   │   ├── client.js           # Axios instance terpusat & konfigurasi X-API-Key
+│   │   └── smartSortApi.js     # Layanan endpoint REST API SmartSort
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Navbar.jsx      # Header, logo, navigasi tab, status controller
+│   │   │   ├── Footer.jsx      # Footer keterangan teknis & tim
+│   │   │   ├── Toast.jsx       # Floating notification toast
+│   │   │   └── ResetModal.jsx  # Modal dialog konfirmasi reset
+│   │   ├── hero/
+│   │   │   ├── HeroSection.jsx # Judul hero & tombol uji simulasi
+│   │   │   └── ShowcaseCards.jsx # 3 Bento showcase cards (Stats, Kamera, Servo)
+│   │   └── tabs/
+│   │       ├── MonitoringTab.jsx # Kapasitas wadah, Donut chart, Recent activities
+│   │       ├── HistoryTab.jsx    # Tabel riwayat log, filter, search, unduh CSV
+│   │       └── DiagnosisTab.jsx  # Kontrol manual servo, frame kamera, injector
+│   ├── constants/
+│   │   └── index.js            # Konstanta sudut servo, kategori, styling badge
+│   ├── utils/
+│   │   └── formatters.js       # Format kategori, persentase, warna kapasitas
+│   ├── App.jsx                 # View coordinator utama
+│   ├── index.css               # Tailwind CSS & custom styles
+│   └── main.jsx                # Entry point React
+├── .env.example                # Template konfigurasi environment
+├── .env.local                  # Konfigurasi environment lokal (diabaikan git)
+├── .gitignore                  # Aturan git ignore root
+├── package.json                # Dependencies & script npm
+├── run_dev.bat                 # Script double-click Windows untuk dev server
+├── tailwind.config.js          # Konfigurasi Tailwind CSS
+└── vite.config.js              # Konfigurasi Vite & proxy backend
 ```
 
 ---
 
-## 🔌 Wiring & Pinout Hardware (ESP32-CAM AI-Thinker)
+## 🚀 Panduan Menjalankan Proyek
 
-| Komponen | Pin Komponen | Pin ESP32-CAM | Catatan Penting |
-| :--- | :--- | :--- | :--- |
-| **HC-SR04** | `VCC` | `5V` | Sumber daya sensor |
-| | `GND` | `GND` | Ground bersama |
-| | `TRIG` | `GPIO 13` | Sinyal pulsa trigger |
-| | `ECHO` | `GPIO 12` | Gunakan voltage divider ke 3.3V jika HC-SR04 tipe 5V |
-| **Servo flap SG90** | `VCC` (Merah) | `5V` eksternal | Gunakan catu daya servo yang stabil dan satukan GND dengan ESP32-CAM |
-| | `GND` (Cokelat) | `GND` bersama | Ground bersama |
-| | `PWM` (Oranye) | `GPIO 14` | Sinyal kendali sudut flap |
-| **Servo pendorong SG90** | `VCC` (Merah) | `5V` eksternal | Sebaiknya gunakan catu daya servo yang sama dan cukup arus |
-| | `GND` (Cokelat) | `GND` bersama | Ground bersama ESP32-CAM |
-| | `PWM` (Oranye) | `GPIO 4` | GPIO22 dipakai kamera sebagai PCLK; GPIO4 juga terhubung ke LED flash |
+### Prasyarat
+- **Node.js** v18+ atau v20+
+- **NPM** v9+
 
-> Pindahkan kabel sinyal servo pendorong dari GPIO22 ke GPIO4. Jangan gunakan GPIO22 untuk servo karena pin itu diperlukan kamera.
-
-### Sudut Flap Diverter (Sesuai Desain 3D):
-* **0°** : Menghadap ke **Organik** (Kiri)
-* **30°**: Posisi **Netral / Residu** (Tengah)
-* **70°**: Menghadap ke **Anorganik** (Kanan)
-
----
-
-## 💻 Panduan Menjalankan Sistem
-
-### 1. Jalankan Backend (FastAPI)
-Double-click file `run_backend.bat` atau jalankan via terminal:
+### 1. Instalasi Dependensi
+Jalankan perintah berikut langsung di root repositori:
 ```bash
-cd D:\smart_sort\backend
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+npm install
 ```
-* **API URL**: `http://localhost:8000`
-* **Swagger API Docs**: `http://localhost:8000/docs`
 
-### 2. Jalankan Frontend (React Dashboard)
-Double-click file `run_frontend.bat` atau jalankan via terminal:
+### 2. Konfigurasi Environment (`.env.local`)
+Salin file `.env.example` menjadi `.env.local`:
 ```bash
-cd D:\smart_sort\frontend
+cp .env.example .env.local
+```
+Sesuaikan nilai variabel lingkungan jika diperlukan:
+```env
+# URL Backend API (Default menggunakan backend live)
+VITE_API_BASE_URL=https://smartsort.ezzar.my.id
+
+# API Key untuk backend (jika backend memproteksi endpoint dengan X-API-Key)
+VITE_API_KEY=your_api_key_here
+```
+
+### 3. Menjalankan Server Development
+Jalankan dev server dengan perintah:
+```bash
 npm run dev
 ```
-* Buka browser di: `http://localhost:5173`
+Atau jika menggunakan Windows, Anda dapat melakukan double-click pada file `run_dev.bat`.
 
-### 3. Upload Kode ke ESP32-CAM
-1. Buka Arduino IDE.
-2. Buka file [smart_sort_esp32_cam.ino](file:///D:/smart_sort/esp32_firmware/smart_sort_esp32_cam.ino).
-3. Install library via Library Manager:
-   * **ArduinoJson** (oleh Benoit Blanchon)
-   * **ESP32Servo** (oleh Kevin Harrington)
-4. Pilih board: **AI Thinker ESP32-CAM**.
-5. Sesuaikan SSID Wi-Fi, Password, dan IP Laptop Anda pada baris konfigurasi:
-   ```cpp
-   const char* ssid = "NAMA_WIFI_ANDA";
-   const char* password = "PASSWORD_WIFI_ANDA";
-   const char* serverUrl = "http://192.168.1.xxx:8000/api/classify";
-   ```
-6. Hubungkan GPIO 0 ke GND untuk mode flashing, lalu upload kode.
+Buka peramban di: **`http://localhost:5173`**
 
----
+### 4. Build untuk Produksi
+Untuk mengompilasi bundel produksi:
+```bash
+npm run build
+```
+Output build yang siap dideploy akan tersedia di direktori `dist/`.
 
-## 🎯 Fitur Dashboard Web (3 Tab Navigasi)
-
-1. **Dashboard Utama (Live Monitoring)**:
-   * 3 Kartu Metrik: Total Sampah Masuk, Suhu & Kelembapan (DHT11), Status Gas / Bau (MQ-135).
-   * 3 Bilah Kapasitas Wadah Dinamis (0–100%) dengan indikator warna (Aman, Waspada, Penuh).
-   * Diagram Proporsi AI (Doughnut Chart) komposisi sampah.
-   * Tabel aktivitas pemilahan 5 item terakhir secara real-time.
-2. **Riwayat & Log Pemilahan (History)**:
-   * Tabel riwayat lengkap dengan filter kategori & pencarian.
-   * Tombol **Unduh CSV / Excel** untuk bukti laporan pengujian.
-   * Tombol **Reset Data / Kosongkan Log** sebelum memulai demo penguji.
-3. **Kontrol Manual & Diagnosis (Plan B / Demo Saver)**:
-   * **Manual Servo Override**: Tombol uji sudut 0° (Organik), 30° (Residu), 70° (Anorganik).
-   * **Camera Frame Test**: Preview gambar snapshot terakhir dari kamera ESP32-CAM.
-   * **Quick Data Injector**: Tombol darurat menyuntikkan sampah jika sensor fisik terkendala di depan penguji.
+### 5. Linting
+Untuk memeriksa kualitas kode:
+```bash
+npm run lint
+```
