@@ -2,6 +2,7 @@ import React from 'react';
 import { RotateCcw, Trash2, ChevronRight, ArrowRight, Lock } from 'lucide-react';
 import { Doughnut } from 'react-chartjs-2';
 import { getCapacityColor } from '../../utils/formatters';
+import MonitoringTabSkeleton from '../skeletons/MonitoringTabSkeleton';
 
 export default function MonitoringTab({
   statusData,
@@ -10,8 +11,13 @@ export default function MonitoringTab({
   onResetBins,
   onNavigateTab,
   isAuthenticated,
-  onRequireAuth
+  onRequireAuth,
+  isLoading
 }) {
+  if (isLoading) {
+    return <MonitoringTabSkeleton />;
+  }
+
   const handleResetBinsClick = () => {
     onRequireAuth(onResetBins);
   };

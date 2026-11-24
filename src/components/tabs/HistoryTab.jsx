@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, RotateCcw, Filter, Search, CheckCircle2, Lock } from 'lucide-react';
 import { API_BASE } from '../../api/client';
+import HistoryTableSkeleton from '../skeletons/HistoryTableSkeleton';
 
 export default function HistoryTab({
   filteredHistory,
@@ -11,7 +12,8 @@ export default function HistoryTab({
   onExportCsv,
   onOpenResetModal,
   isAuthenticated,
-  onRequireAuth
+  onRequireAuth,
+  isLoading
 }) {
   const handleResetLogClick = () => {
     onRequireAuth(onOpenResetModal);
@@ -24,7 +26,7 @@ export default function HistoryTab({
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900 m-0">Riwayat Log Pemilahan Sampah</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Dataset riwayat pemilahan untuk pengujian akurasi model AI (Total {filteredHistory.length} data tersimpan)
+              Dataset riwayat pemilahan untuk pengujian akurasi model AI (Total {isLoading ? '...' : filteredHistory.length} data tersimpan)
             </p>
           </div>
 
@@ -96,7 +98,9 @@ export default function HistoryTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredHistory.length > 0 ? (
+              {isLoading ? (
+                <HistoryTableSkeleton rows={6} />
+              ) : filteredHistory.length > 0 ? (
                 filteredHistory.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">#{row.id}</td>

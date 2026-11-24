@@ -22,6 +22,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [statusData, setStatusData] = useState(null);
   const [historyData, setHistoryData] = useState([]);
+  const [isStatusLoading, setIsStatusLoading] = useState(true);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +58,8 @@ export default function App() {
       }));
     } catch (err) {
       console.error('Error fetching status:', err);
+    } finally {
+      setIsStatusLoading(false);
     }
   }, []);
 
@@ -75,6 +79,8 @@ export default function App() {
       }));
     } catch (err) {
       console.error('Error fetching history:', err);
+    } finally {
+      setIsHistoryLoading(false);
     }
   }, []);
 
@@ -254,6 +260,7 @@ export default function App() {
             }}
             isAuthenticated={isAuthenticated}
             onRequireAuth={requireAuth}
+            isLoading={isStatusLoading}
           />
         </div>
       </section>
@@ -267,7 +274,7 @@ export default function App() {
             onTabChange={(tab) => {
               if (tab === 'history') fetchHistory();
             }}
-            historyCount={historyData.length}
+            historyCount={isHistoryLoading ? '...' : historyData.length}
           />
 
           {activeTab === 'dashboard' && (
@@ -282,6 +289,7 @@ export default function App() {
               }}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
+              isLoading={isStatusLoading}
             />
           )}
 
@@ -296,6 +304,7 @@ export default function App() {
               onOpenResetModal={() => setIsResetModalOpen(true)}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
+              isLoading={isHistoryLoading}
             />
           )}
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, RefreshCw, ArrowRight, Send, Lock } from 'lucide-react';
+import ShowcaseCardsSkeleton from '../skeletons/ShowcaseCardsSkeleton';
 
 export default function ShowcaseCards({
   statusData,
@@ -7,8 +8,13 @@ export default function ShowcaseCards({
   onRefreshCamera,
   onNavigateTab,
   isAuthenticated,
-  onRequireAuth
+  onRequireAuth,
+  isLoading
 }) {
+  if (isLoading) {
+    return <ShowcaseCardsSkeleton />;
+  }
+
   const currentServoAngle = statusData?.devices?.servo_current_angle ?? 30;
   const currentCategoryActive =
     currentServoAngle === 0 ? 'Organik' : currentServoAngle === 70 ? 'Anorganik' : 'Residu';
