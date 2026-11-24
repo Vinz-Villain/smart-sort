@@ -42,8 +42,8 @@ Warna kategori sampah **wajib sinkron 100%** dengan sudut fisik servo SG90:
 | Kategori | Sudut Servo | Warna Utama | Badge Styling | Bar Kapasitas |
 | :--- | :---: | :--- | :--- | :--- |
 | **Organik** | **0°** (Kiri) | `emerald-500` (`#10b981`) | `bg-emerald-50 text-emerald-700 border-emerald-200/80` | `bg-emerald-500` |
-| **Residu** | **30°** (Tengah) | `rose-500` (`#f43f5e`) | `bg-rose-50 text-rose-700 border-rose-200/80` | `bg-rose-500` |
-| **Anorganik** | **70°** (Kanan) | `amber-500` (`#f59e0b`) | `bg-amber-50 text-amber-700 border-amber-200/80` | `bg-amber-500` |
+| **Anorganik** | **90°** (Tengah) | `amber-500` (`#f59e0b`) | `bg-amber-50 text-amber-700 border-amber-200/80` | `bg-amber-500` |
+| **Residu** | **180°** (Kanan) | `rose-500` (`#f43f5e`) | `bg-rose-50 text-rose-700 border-rose-200/80` | `bg-rose-500` |
 
 ### 2.4 Indikator Ambang Batas Kapasitas Wadah
 - **Tersedia (0% - 50%)**: `bg-emerald-500` (Aman, label *Tersedia*).
@@ -88,7 +88,7 @@ Font resmi proyek adalah **`Plus Jakarta Sans`** (didukung oleh sistem fallbacks
 3. **Kartu Status Aktuator (Kanan - Dark Glass Neon)**:
    - Latar kaca gelap `glass-airlume-dark` dengan pendaran `shadow-airlume-glow`.
    - Pembacaan sudut servo besar (*SERVO → X°*).
-   - Jalur trajektori visual garis putus-putus dengan ikon panah meluncur menuju sudut tujuan (0°, 30°, 70°).
+   - Jalur trajektori visual garis putus-putus dengan ikon panah meluncur menuju sudut tujuan (0°, 90°, 180°).
    - Metrik sensor lingkungan DHT11 (°C) dan Gas MQ-135 (PPM).
 
 ### 4.3 Navigasi Segmented Control
@@ -107,7 +107,7 @@ Di atas setiap tampilan data, terdapat kontrol pil responsif untuk beralih antar
 - **Tabel Dataset**: Sticky header, pembatas baris halus, dan badge status *Tersortir* berwarna emerald.
 
 ### 4.6 Panel Diagnostik (Plan B / Demo Saver)
-- **Kotak Uji Servo**: 3 tombol sudut besar (0° Organik, 30° Residu, 70° Anorganik) dengan animasi *active:scale-95*.
+- **Kotak Uji Servo**: 3 tombol sudut besar (0° Organik, 90° Anorganik, 180° Residu) dengan animasi *active:scale-95*.
 - **Kotak Frame Kamera**: Tampilan snapshot mandiri resolusi penuh untuk kalibrasi posisi kamera.
 - **Kotak Injeksi Sampah**: 3 tombol cepat menyuntikkan sampah simulasi ke sistem jika sensor fisik terhalang saat demonstrasi.
 

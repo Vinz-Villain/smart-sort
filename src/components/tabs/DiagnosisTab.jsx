@@ -79,21 +79,7 @@ export default function DiagnosisTab({
             </button>
 
             <button
-              onClick={() => handleServoClick(30, 'Residu')}
-              className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95 relative"
-            >
-              {!isAuthenticated && (
-                <span className="absolute top-2 right-2 text-rose-600/70">
-                  <Lock className="w-3 h-3" />
-                </span>
-              )}
-              <span className="text-xl sm:text-2xl font-bold text-rose-700 tabular-nums">30°</span>
-              <span className="text-[11px] sm:text-xs font-semibold text-rose-900 truncate w-full">Residu</span>
-              <span className="text-[9px] sm:text-[10px] text-rose-600 font-medium">(Tengah)</span>
-            </button>
-
-            <button
-              onClick={() => handleServoClick(70, 'Anorganik')}
+              onClick={() => handleServoClick(90, 'Anorganik')}
               className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95 relative"
             >
               {!isAuthenticated && (
@@ -101,9 +87,23 @@ export default function DiagnosisTab({
                   <Lock className="w-3 h-3" />
                 </span>
               )}
-              <span className="text-xl sm:text-2xl font-bold text-amber-700 tabular-nums">70°</span>
+              <span className="text-xl sm:text-2xl font-bold text-amber-700 tabular-nums">90°</span>
               <span className="text-[11px] sm:text-xs font-semibold text-amber-900 truncate w-full">Anorganik</span>
-              <span className="text-[9px] sm:text-[10px] text-amber-600 font-medium">(Kanan)</span>
+              <span className="text-[9px] sm:text-[10px] text-amber-600 font-medium">(Tengah)</span>
+            </button>
+
+            <button
+              onClick={() => handleServoClick(180, 'Residu')}
+              className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-center transition cursor-pointer flex flex-col items-center gap-1 shadow-sm active:scale-95 relative"
+            >
+              {!isAuthenticated && (
+                <span className="absolute top-2 right-2 text-rose-600/70">
+                  <Lock className="w-3 h-3" />
+                </span>
+              )}
+              <span className="text-xl sm:text-2xl font-bold text-rose-700 tabular-nums">180°</span>
+              <span className="text-[11px] sm:text-xs font-semibold text-rose-900 truncate w-full">Residu</span>
+              <span className="text-[9px] sm:text-[10px] text-rose-600 font-medium">(Kanan)</span>
             </button>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function DiagnosisTab({
               className="py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-md shadow-amber-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              <span>+ Suntik Sampah Anorganik (70°)</span>
+              <span>+ Suntik Sampah Anorganik (90°)</span>
               {!isAuthenticated && <Lock className="w-3 h-3 opacity-80" />}
             </button>
 
@@ -205,7 +205,7 @@ export default function DiagnosisTab({
               className="py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-md shadow-rose-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              <span>+ Suntik Sampah Residu (30°)</span>
+              <span>+ Suntik Sampah Residu (180°)</span>
               {!isAuthenticated && <Lock className="w-3 h-3 opacity-80" />}
             </button>
           </div>

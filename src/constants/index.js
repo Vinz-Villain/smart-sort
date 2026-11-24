@@ -1,7 +1,7 @@
 export const SERVO_ANGLES = {
   Organik: 0,
-  Residu: 30,
-  Anorganik: 70
+  Anorganik: 90,
+  Residu: 180
 };
 
 export const CATEGORIES = ['Organik', 'Anorganik', 'Residu'];

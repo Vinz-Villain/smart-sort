@@ -310,7 +310,7 @@ export default function App() {
 
           {activeTab === 'diagnosis' && (
             <DiagnosisTab
-              currentServoAngle={statusData?.devices?.servo_current_angle ?? 30}
+              currentServoAngle={statusData?.devices?.servo_current_angle ?? 90}
               cameraImageUrl={cameraImageUrl}
               isLoading={isLoading}
               onServoControl={handleServoControl}

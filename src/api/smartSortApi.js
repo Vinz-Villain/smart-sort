@@ -26,7 +26,7 @@ export const smartSortApi = {
       },
       devices: {
         esp32_controller: status.esp32_controller || 'Online',
-        servo_current_angle: status.current_servo_angle ?? status.servo_current_angle ?? 30
+        servo_current_angle: status.current_servo_angle ?? status.servo_current_angle ?? 90
       }
     };
   },

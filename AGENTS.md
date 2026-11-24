@@ -24,7 +24,7 @@ Dokumen ini merupakan panduan instruksi utama untuk Autonomous Coding Agents (se
 ### 1. Kepatuhan Wajib pada Spesifikasi Desain (`docs/DESIGN.md`) — *Hard Rule*
 - Setiap perubahan tampilan, penambahan komponen baru, atau penataan ulang layout **WAJIB mematuhi spesifikasi desain resmi di [docs/DESIGN.md](file:///home/naufal/Documents/my-projects/iot_ken/smart-sort/docs/DESIGN.md)**.
 - **Dilarang keras**:
-  - Mengubah skema warna kategori sampah (Organik: `emerald-500` / 0°, Residu: `rose-500` / 30°, Anorganik: `amber-500` / 70°).
+  - Mengubah skema warna kategori sampah (Organik: `emerald-500` / 0°, Anorganik: `amber-500` / 90°, Residu: `rose-500` / 180°).
   - Menghapus atau mengganti identitas visual **AirLume Modern Minimalist** (`bg-fluted-blue`, `shadow-airlume-card`, `glass-airlume-dark`, `shadow-airlume-glow`).
   - Mengubah font utama `Plus Jakarta Sans` ke font generik lain.
   - Mengabaikan responsivitas *mobile-first* (breakpoint `sm:`, `md:`, `lg:`).

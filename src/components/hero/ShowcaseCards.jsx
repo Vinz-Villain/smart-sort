@@ -15,9 +15,9 @@ export default function ShowcaseCards({
     return <ShowcaseCardsSkeleton />;
   }
 
-  const currentServoAngle = statusData?.devices?.servo_current_angle ?? 30;
+  const currentServoAngle = statusData?.devices?.servo_current_angle ?? 90;
   const currentCategoryActive =
-    currentServoAngle === 0 ? 'Organik' : currentServoAngle === 70 ? 'Anorganik' : 'Residu';
+    currentServoAngle === 0 ? 'Organik' : currentServoAngle === 90 ? 'Anorganik' : 'Residu';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 pt-1 items-stretch">
@@ -194,8 +194,8 @@ export default function ShowcaseCards({
               </div>
             </div>
             <div className="text-center shrink-0">
-              <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 30 ? 'text-rose-400' : 'text-slate-400'}`}>30°</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-400">Residu</div>
+              <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 90 ? 'text-amber-400' : 'text-slate-400'}`}>90°</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-400">Anorganik</div>
             </div>
             <div className="flex-1 px-1 sm:px-2 flex items-center justify-center">
               <div className="w-full border-t border-dashed border-cyan-400/50 relative flex items-center justify-center">
@@ -203,8 +203,8 @@ export default function ShowcaseCards({
               </div>
             </div>
             <div className="text-center shrink-0">
-              <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 70 ? 'text-amber-400' : 'text-slate-400'}`}>70°</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-400">Anorganik</div>
+              <div className={`font-semibold text-[11px] sm:text-xs ${currentServoAngle === 180 ? 'text-rose-400' : 'text-slate-400'}`}>180°</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-400">Residu</div>
             </div>
           </div>
 
