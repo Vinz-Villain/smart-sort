@@ -81,12 +81,6 @@ export const smartSortApi = {
     return res.data;
   },
 
-  // Inject trash simulation sample
-  injectTrashSample: async (category) => {
-    const res = await api.post('/api/manual/inject', { category: category.toLowerCase() });
-    return res.data;
-  },
-
   // Reset bin container capacities
   resetBins: async (category = null) => {
     const payload = category ? { category: category.toLowerCase() } : {};

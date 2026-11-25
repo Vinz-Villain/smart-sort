@@ -18,7 +18,7 @@ export default function TabSwitcher({ activeTab, setActiveTab, onTabChange, hist
         <p className="text-xs text-slate-500 mt-0.5">
           {activeTab === 'dashboard' && 'Status kapasitas fisik wadah dan proporsi klasifikasi'}
           {activeTab === 'history' && 'Log rekaman riwayat deteksi objek dan akurasi model'}
-          {activeTab === 'diagnosis' && 'Kontrol sudut aktuator servo SG90 dan demonstrasi simulasi'}
+          {activeTab === 'diagnosis' && 'Kontrol sudut aktuator servo SG90 dan diagnostik visual kamera'}
         </p>
       </div>
 

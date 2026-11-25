@@ -76,7 +76,7 @@ Font resmi proyek adalah **`Plus Jakarta Sans`** (didukung oleh sistem fallbacks
   - Status Controller: Pill kanan yang menampilkan status real-time mikrokontroler (`ESP32: Online`).
 - **Hero Centerpiece**:
   - Badge pill: `Sparkles` icon dengan teks *"Sort Smarter With SmartSort.Ai"*.
-  - Tombol CTA: *"Uji Simulasi Sortir"* dengan efek *hover arrow translation* dan pendaran bayangan biru.
+  - Tombol CTA: *"Lihat Monitoring Sistem"* dengan efek *hover arrow translation* dan pendaran bayangan biru.
 
 ### 4.2 Tiga Kartu Showcase Bento (Signature AirLume)
 1. **Kartu Statistik (Kiri - Putih)**:
@@ -106,10 +106,9 @@ Di atas setiap tampilan data, terdapat kontrol pil responsif untuk beralih antar
 - **Toolbar Filter & Search**: Tombol filter kategori instan (*All, Organik, Anorganik, Residu*), kolom input pencarian ID/waktu dengan ikon search, tombol ekspor CSV, dan tombol reset log.
 - **Tabel Dataset**: Sticky header, pembatas baris halus, dan badge status *Tersortir* berwarna emerald.
 
-### 4.6 Panel Diagnostik (Plan B / Demo Saver)
+### 4.6 Panel Diagnostik
 - **Kotak Uji Servo**: 3 tombol sudut besar (0° Organik, 90° Anorganik, 180° Residu) dengan animasi *active:scale-95*.
 - **Kotak Frame Kamera**: Tampilan snapshot mandiri resolusi penuh untuk kalibrasi posisi kamera.
-- **Kotak Injeksi Sampah**: 3 tombol cepat menyuntikkan sampah simulasi ke sistem jika sensor fisik terhalang saat demonstrasi.
 
 ### 4.7 Notifikasi & Dialog Modal
 - **Floating Toast**: Muncul di sudut kanan atas dengan backdrop blur, icon penanda (Centang biru untuk sukses, Segitiga merah untuk galat), dan animasi slide-in.

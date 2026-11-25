@@ -31,7 +31,7 @@ export default function Navbar({
       </div>
 
       {/* Nav Menu Center (Desktop) */}
-      <div className="hidden md:flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-2 py-1 backdrop-blur-md">
+      {/* <div className="hidden md:flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-2 py-1 backdrop-blur-md">
         <button
           onClick={() => handleTabClick('dashboard')}
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
@@ -56,7 +56,7 @@ export default function Navbar({
         >
           Kontrol Manual
         </button>
-      </div>
+      </div> */}
 
       {/* Right Controls & Auth Badge */}
       <div className="flex items-center gap-2 sm:gap-2.5">
@@ -91,12 +91,12 @@ export default function Navbar({
         )}
 
         {/* Reset Trigger */}
-        <button
+        {/* <button
           onClick={onOpenResetModal}
           className="px-3.5 sm:px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition shadow-md shadow-blue-600/30 cursor-pointer shrink-0"
         >
           Reset
-        </button>
+        </button> */}
       </div>
     </nav>
   );

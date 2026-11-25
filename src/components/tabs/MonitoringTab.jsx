@@ -192,7 +192,7 @@ export default function MonitoringTab({
               ) : (
                 <tr>
                   <td colSpan="4" className="py-8 text-center text-slate-400 font-medium">
-                    Belum ada aktivitas terekam. Masukkan objek atau gunakan tombol injeksi simulasi.
+                    Belum ada aktivitas terekam. Menunggu objek terdeteksi oleh sensor perangkat.
                   </td>
                 </tr>
               )}

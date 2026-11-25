@@ -1,22 +1,16 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw, Camera, Sparkles, Trash2, Lock, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Camera, Lock, ShieldAlert } from 'lucide-react';
 
 export default function DiagnosisTab({
   currentServoAngle,
   cameraImageUrl,
-  isLoading,
   onServoControl,
   onRefreshCamera,
-  onInjectTrash,
   isAuthenticated,
   onRequireAuth
 }) {
   const handleServoClick = (angle, category) => {
     onRequireAuth(() => onServoControl(angle, category));
-  };
-
-  const handleInjectClick = (category) => {
-    onRequireAuth(() => onInjectTrash(category));
   };
 
   const handleCameraRefreshClick = () => {
@@ -32,9 +26,9 @@ export default function DiagnosisTab({
             <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-amber-950 m-0">Panel Pengujian Manual & Live Demo</h3>
+            <h3 className="text-xs sm:text-sm font-bold text-amber-950 m-0">Panel Pengujian Manual & Diagnostik</h3>
             <p className="text-xs text-amber-800 mt-0.5 font-normal">
-              Gunakan panel ini untuk menguji putaran motor servo SG90, melihat tangkapan kamera ESP32-CAM secara mandiri, dan melakukan simulasi penyortiran instan.
+              Gunakan panel ini untuk menguji putaran motor servo SG90 dan melihat tangkapan kamera ESP32-CAM secara mandiri.
             </p>
           </div>
         </div>
@@ -162,52 +156,6 @@ export default function DiagnosisTab({
                 <span>OV2640 Detection Stream</span>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Box 3: Data Injector */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200/80 shadow-sm space-y-3 sm:space-y-4 lg:col-span-2">
-          <div>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 m-0 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span>3. Simulasi Masuk Sampah (Data Injector)</span>
-              {!isAuthenticated && <Lock className="w-3.5 h-3.5 text-amber-600" />}
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 font-normal">
-              Gunakan tombol di bawah ini untuk mensimulasikan deteksi sampah langsung tanpa menunggu pembacaan sensor fisik.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
-            <button
-              disabled={isLoading}
-              onClick={() => handleInjectClick('Organik')}
-              className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>+ Suntik Sampah Organik (0°)</span>
-              {!isAuthenticated && <Lock className="w-3 h-3 opacity-80" />}
-            </button>
-
-            <button
-              disabled={isLoading}
-              onClick={() => handleInjectClick('Anorganik')}
-              className="py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-md shadow-amber-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>+ Suntik Sampah Anorganik (90°)</span>
-              {!isAuthenticated && <Lock className="w-3 h-3 opacity-80" />}
-            </button>
-
-            <button
-              disabled={isLoading}
-              onClick={() => handleInjectClick('Residu')}
-              className="py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-md shadow-rose-600/20 transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>+ Suntik Sampah Residu (180°)</span>
-              {!isAuthenticated && <Lock className="w-3 h-3 opacity-80" />}
-            </button>
           </div>
         </div>
       </div>

@@ -46,10 +46,9 @@ graph LR
    - Ekspor laporan ke format **CSV**.
    - Tombol dialog konfirmasi reset log.
 
-3. **Panel Diagnostik & Pengujian Manual (Plan B / Demo Saver)**:
-   - **Manual Servo Override**: Menggerakkan flap ke 0° (Organik), 30° (Residu), dan 70° (Anorganik) secara langsung.
+3. **Panel Diagnostik & Pengujian Manual**:
+   - **Manual Servo Override**: Menggerakkan flap ke 0° (Organik), 90° (Anorganik), dan 180° (Residu) secara langsung.
    - **Camera Snapshot**: Memperbarui dan menampilkan jepretan kamera terakhir dari ESP32-CAM.
-   - **Data Injector**: Menyuntikkan sampel sampah simulasi untuk demo langsung tanpa menunggu sensor fisik.
 
 ---
 
@@ -71,12 +70,12 @@ smart-sort/
 │   │   │   ├── Toast.jsx       # Floating notification toast
 │   │   │   └── ResetModal.jsx  # Modal dialog konfirmasi reset
 │   │   ├── hero/
-│   │   │   ├── HeroSection.jsx # Judul hero & tombol uji simulasi
+│   │   │   ├── HeroSection.jsx # Judul hero & tombol eksplorasi monitoring
 │   │   │   └── ShowcaseCards.jsx # 3 Bento showcase cards (Stats, Kamera, Servo)
 │   │   └── tabs/
 │   │       ├── MonitoringTab.jsx # Kapasitas wadah, Donut chart, Recent activities
 │   │       ├── HistoryTab.jsx    # Tabel riwayat log, filter, search, unduh CSV
-│   │       └── DiagnosisTab.jsx  # Kontrol manual servo, frame kamera, injector
+│   │       └── DiagnosisTab.jsx  # Kontrol manual servo & frame kamera ESP32
 │   ├── constants/
 │   │   └── index.js            # Konstanta sudut servo, kategori, styling badge
 │   ├── utils/

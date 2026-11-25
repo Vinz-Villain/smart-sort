@@ -26,7 +26,6 @@ export default function App() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [lastImageKey, setLastImageKey] = useState(() => Date.now());
   const [cameraImageUrl, setCameraImageUrl] = useState('');
   const [actionMessage, setActionMessage] = useState(null);
@@ -155,17 +154,11 @@ export default function App() {
     }
   };
 
-  const handleInjectTrash = async (category) => {
-    try {
-      setIsLoading(true);
-      await smartSortApi.injectTrashSample(category);
-      showToast(`Berhasil menyuntikkan sampel ${category}`);
-      fetchHistory();
-      fetchStatus();
-    } catch {
-      showToast('Gagal menyuntikkan data', true);
-    } finally {
-      setIsLoading(false);
+  const handleExploreMonitoring = () => {
+    setActiveTab('dashboard');
+    const el = document.getElementById('control-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -248,7 +241,7 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          <HeroSection onInjectSimulation={() => requireAuth(() => handleInjectTrash('Organik'))} />
+          <HeroSection onExplore={handleExploreMonitoring} />
 
           <ShowcaseCards
             statusData={statusData}
@@ -266,7 +259,7 @@ export default function App() {
       </section>
 
       {/* Operation Control & Tab Section */}
-      <section className="bg-[#F8FAFD] py-8 sm:py-14 flex-1">
+      <section id="control-section" className="bg-[#F8FAFD] py-8 sm:py-14 flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-6 sm:space-y-8">
           <TabSwitcher
             activeTab={activeTab}
@@ -312,10 +305,8 @@ export default function App() {
             <DiagnosisTab
               currentServoAngle={statusData?.devices?.servo_current_angle ?? 90}
               cameraImageUrl={cameraImageUrl}
-              isLoading={isLoading}
               onServoControl={handleServoControl}
               onRefreshCamera={handleRefreshCamera}
-              onInjectTrash={handleInjectTrash}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
             />
