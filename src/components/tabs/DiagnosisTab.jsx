@@ -1,9 +1,10 @@
+import { cameraSnapshotLabel } from '../../hooks/useCameraSnapshot';
 import React from 'react';
 import { AlertTriangle, RefreshCw, Camera, Lock } from 'lucide-react';
 
 export default function DiagnosisTab({
   currentServoAngle,
-  cameraImageUrl,
+  cameraFrame,
   onServoControl,
   onRefreshCamera,
   isAdminRoute,
@@ -53,7 +54,7 @@ export default function DiagnosisTab({
             >
               {isAdminRoute
                 ? 'Gunakan panel ini untuk menguji putaran motor servo SG90 dan melihat tangkapan kamera ESP32-CAM secara mandiri.'
-                : 'Pantau tangkapan snapshot terbaru dari modul kamera ESP32-CAM OV2640 secara publik.'}
+                : 'Lihat foto klasifikasi terakhir dari ESP32-CAM.'}
             </p>
           </div>
         </div>
@@ -134,30 +135,28 @@ export default function DiagnosisTab({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm sm:text-base font-bold text-slate-900 m-0">
-                {isAdminRoute ? '2. Frame Snapshot Kamera' : 'Frame Snapshot Kamera'}
+                Foto klasifikasi terakhir
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">Tampilan foto terakhir modul ESP32-CAM</p>
             </div>
             <button
               onClick={onRefreshCamera}
               className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200 cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-slate-500" /> Refresh
+              <RefreshCw className="w-3.5 h-3.5 text-slate-500" /> Muat ulang
             </button>
           </div>
 
           <div className="aspect-video w-full bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center relative shadow-inner">
-            <img
-              src={cameraImageUrl || null}
-              alt="Latest ESP32-CAM Frame"
-              className="w-full h-full object-cover transition-all duration-300"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
+            {cameraFrame.url && (
+              <img
+                src={cameraFrame.url}
+                alt="Foto klasifikasi dari ESP32-CAM"
+                className="w-full h-full object-cover transition-all duration-300"
+              />
+            )}
             <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-[10px] sm:text-[11px] text-slate-300 font-mono flex items-center gap-1.5">
               <Camera className="w-3 h-3 text-emerald-400" />
-              <span>OV2640 Detection Stream</span>
+              <span role="status">{cameraSnapshotLabel(cameraFrame)}</span>
             </div>
           </div>
         </div>

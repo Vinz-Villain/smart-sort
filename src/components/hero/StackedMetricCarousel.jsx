@@ -7,7 +7,7 @@ const SWIPE_THRESHOLD_PX = 40;
 
 export default function StackedMetricCarousel({
   statusData,
-  cameraImageUrl,
+  cameraFrame,
   onRefreshCamera,
   onNavigateTab,
   isAdminRoute
@@ -21,7 +21,7 @@ export default function StackedMetricCarousel({
   const totalItems = statusData?.summary?.total_items ?? 0;
   const slides = buildShowcaseSlides({
     statusData,
-    cameraImageUrl,
+    cameraFrame,
     onRefreshCamera,
     isAdminRoute
   });

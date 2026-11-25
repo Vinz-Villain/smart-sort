@@ -59,20 +59,25 @@ export const smartSortApi = {
     };
   },
 
-  // Fetch camera snapshot (returns blob or base64)
-  fetchCameraFrame: async (timestampKey) => {
+  fetchCameraFrame: async (etag, signal) => {
     const res = await api.get('/api/camera/latest', {
-      params: { t: timestampKey },
-      responseType: 'blob'
+      signal,
+      timeout: 12000,
+      headers: etag ? { 'If-None-Match': etag } : {},
+      validateStatus: (status) => status === 200 || status === 304
     });
+    if (res.status === 304) return null;
 
-    if (res.data.type && res.data.type.includes('json')) {
-      const payload = JSON.parse(await res.data.text());
-      return { isBase64: true, url: payload.data?.image_base64 ?? '' };
+    const frame = res.data?.data;
+    if (!res.data?.success || !frame || (!frame.is_placeholder && !frame.image_base64)) {
+      throw new Error('Respons foto kamera tidak valid');
     }
-
-    const objectUrl = URL.createObjectURL(res.data);
-    return { isBase64: false, url: objectUrl };
+    return {
+      url: frame.is_placeholder ? '' : frame.image_base64,
+      timestamp: frame.is_placeholder ? null : frame.timestamp,
+      etag: res.headers.etag,
+      legacy: frame.camera_source !== 'classification_upload'
+    };
   },
 
   // Move servo flap manually

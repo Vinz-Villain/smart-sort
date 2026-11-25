@@ -13,6 +13,7 @@ import MonitoringTab from './components/tabs/MonitoringTab';
 import HistoryTab from './components/tabs/HistoryTab';
 import DiagnosisTab from './components/tabs/DiagnosisTab';
 import { smartSortApi } from './api/smartSortApi';
+import { useCameraSnapshot } from './hooks/useCameraSnapshot';
 import { useAdminAuth } from './hooks/useAdminAuth';
 import { getChartData, chartOptions } from './utils/chartConfig';
 
@@ -26,8 +27,7 @@ export default function App() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [lastImageKey, setLastImageKey] = useState(() => Date.now());
-  const [cameraImageUrl, setCameraImageUrl] = useState('');
+  const { frame: cameraFrame, refresh: handleRefreshCamera } = useCameraSnapshot();
   const [actionMessage, setActionMessage] = useState(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -96,22 +96,6 @@ export default function App() {
       clearInterval(historyInterval);
     };
   }, [fetchStatus, fetchHistory, activeTab]);
-
-  // Camera preview effect
-  useEffect(() => {
-    let activeObjectUrl = null;
-    smartSortApi
-      .fetchCameraFrame(lastImageKey)
-      .then(({ isBase64, url }) => {
-        if (!isBase64) activeObjectUrl = url;
-        setCameraImageUrl(url);
-      })
-      .catch((err) => console.error('Error fetching camera image:', err));
-
-    return () => {
-      if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
-    };
-  }, [lastImageKey]);
 
   // Guard critical operations with 6-digit PIN authentication
   const requireAuth = useCallback(
@@ -196,11 +180,6 @@ export default function App() {
     }
   };
 
-  const handleRefreshCamera = () => {
-    setLastImageKey(Date.now());
-    showToast('Snapshot frame kamera diperbarui');
-  };
-
   const filteredHistory = historyData.filter((item) => {
     const matchesCategory = filterCategory === 'All' || item.category === filterCategory;
     const matchesSearch =
@@ -252,7 +231,7 @@ export default function App() {
 
           <ShowcaseCards
             statusData={statusData}
-            cameraImageUrl={cameraImageUrl}
+            cameraFrame={cameraFrame}
             onRefreshCamera={handleRefreshCamera}
             onNavigateTab={(tab) => {
               setActiveTab(tab);
@@ -313,7 +292,7 @@ export default function App() {
           {activeTab === 'diagnosis' && (
             <DiagnosisTab
               currentServoAngle={statusData?.devices?.servo_current_angle ?? 90}
-              cameraImageUrl={cameraImageUrl}
+              cameraFrame={cameraFrame}
               onServoControl={handleServoControl}
               onRefreshCamera={handleRefreshCamera}
               isAdminRoute={isAdminRoute}

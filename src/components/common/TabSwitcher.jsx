@@ -21,7 +21,7 @@ export default function TabSwitcher({ activeTab, setActiveTab, onTabChange, hist
           {activeTab === 'diagnosis' &&
             (isAdminRoute
               ? 'Kontrol sudut aktuator servo SG90 dan diagnostik visual kamera'
-              : 'Diagnostik visual tangkapan kamera ESP32-CAM secara real-time')}
+              : 'Lihat foto klasifikasi terakhir dari ESP32-CAM')}
         </p>
       </div>
 

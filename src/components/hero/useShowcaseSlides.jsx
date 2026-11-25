@@ -1,9 +1,10 @@
+import { cameraSnapshotLabel } from '../../hooks/useCameraSnapshot';
 import React from 'react';
 import { Sparkles, Camera, RefreshCw, Cpu, ThermometerSun } from 'lucide-react';
 
 export function buildShowcaseSlides({
   statusData,
-  cameraImageUrl,
+  cameraFrame,
   onRefreshCamera,
   isAdminRoute
 }) {
@@ -41,22 +42,21 @@ export function buildShowcaseSlides({
     },
     {
       id: 'camera',
-      badge: 'SmartSort Vision AI • 98%',
+      badge: 'Kamera OV2640',
       icon: Camera,
-      title: 'Scanning Kamera OV2640',
-      description: 'Pratinjau tangkapan kamera ESP32-CAM dengan waktu respons servo < 1.2s.',
+      title: 'Foto klasifikasi terakhir',
+      description: 'Foto dari proses klasifikasi terakhir yang diterima backend.',
       actionLabel: 'Diagnostik Kamera',
       targetTab: 'diagnosis',
       body: (
         <div className="mt-3 rounded-2xl overflow-hidden border border-emerald-200/80 bg-slate-900 aspect-video relative flex items-center justify-center shadow-inner">
-          <img
-            src={cameraImageUrl || null}
-            alt="ESP32-CAM OV2640 Frame"
-            className="w-full h-full object-cover transition-all duration-300"
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
+          {cameraFrame.url && (
+            <img
+              src={cameraFrame.url}
+              alt="Foto klasifikasi dari ESP32-CAM"
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+          )}
           <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-emerald-400/80 rounded-tl pointer-events-none" />
           <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-emerald-400/80 rounded-br pointer-events-none" />
 
@@ -64,13 +64,13 @@ export function buildShowcaseSlides({
             type="button"
             onClick={onRefreshCamera}
             className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition cursor-pointer"
-            title="Refresh Frame"
+            title="Muat ulang foto"
+            aria-label="Muat ulang foto"
           >
             <RefreshCw className="w-3 h-3" />
           </button>
           <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/65 text-[10px] text-white backdrop-blur-md font-mono flex items-center gap-1.5 border border-emerald-400/25">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>OV2640: Live</span>
+            <span role="status">{cameraSnapshotLabel(cameraFrame)}</span>
           </div>
         </div>
       )

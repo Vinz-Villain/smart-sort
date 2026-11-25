@@ -4,7 +4,7 @@ import StackedMetricCarousel from './StackedMetricCarousel';
 
 export default function ShowcaseCards({
   statusData,
-  cameraImageUrl,
+  cameraFrame,
   onRefreshCamera,
   onNavigateTab,
   isAdminRoute,
@@ -17,7 +17,7 @@ export default function ShowcaseCards({
   return (
     <StackedMetricCarousel
       statusData={statusData}
-      cameraImageUrl={cameraImageUrl}
+      cameraFrame={cameraFrame}
       onRefreshCamera={onRefreshCamera}
       onNavigateTab={onNavigateTab}
       isAdminRoute={isAdminRoute}
