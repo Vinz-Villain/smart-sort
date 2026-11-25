@@ -11,6 +11,7 @@ export default function HistoryTab({
   setSearchQuery,
   onExportCsv,
   onOpenResetModal,
+  isAdminRoute = false,
   isAuthenticated,
   onRequireAuth,
   isLoading
@@ -38,14 +39,16 @@ export default function HistoryTab({
             >
               <Download className="w-3.5 h-3.5" /> Unduh CSV
             </a>
-            <button
-              onClick={handleResetLogClick}
-              className="px-3.5 sm:px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Log</span>
-              {!isAuthenticated && <Lock className="w-3 h-3 text-rose-500" />}
-            </button>
+            {isAdminRoute && (
+              <button
+                onClick={handleResetLogClick}
+                className="px-3.5 sm:px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Log</span>
+                {!isAuthenticated && <Lock className="w-3 h-3 text-rose-500" />}
+              </button>
+            )}
           </div>
         </div>
 

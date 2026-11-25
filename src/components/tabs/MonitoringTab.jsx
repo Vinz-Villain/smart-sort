@@ -10,6 +10,7 @@ export default function MonitoringTab({
   chartOptions,
   onResetBins,
   onNavigateTab,
+  isAdminRoute = false,
   isAuthenticated,
   onRequireAuth,
   isLoading
@@ -38,14 +39,16 @@ export default function MonitoringTab({
                   Pantau ketinggian sampah sebelum wadah penuh
                 </p>
               </div>
-              <button
-                onClick={handleResetBinsClick}
-                className="self-start sm:self-auto px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-                <span>Kosongkan Wadah</span>
-                {!isAuthenticated && <Lock className="w-3 h-3 text-slate-400" />}
-              </button>
+              {isAdminRoute && (
+                <button
+                  onClick={handleResetBinsClick}
+                  className="self-start sm:self-auto px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Kosongkan Wadah</span>
+                  {!isAuthenticated && <Lock className="w-3 h-3 text-slate-400" />}
+                </button>
+              )}
             </div>
 
             <div className="space-y-3.5">

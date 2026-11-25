@@ -287,6 +287,7 @@ export default function App() {
                 setActiveTab(tab);
                 if (tab === 'history') fetchHistory();
               }}
+              isAdminRoute={isAdminRoute}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
               isLoading={isStatusLoading}
@@ -302,6 +303,7 @@ export default function App() {
               setSearchQuery={setSearchQuery}
               onExportCsv={handleExportHistory}
               onOpenResetModal={() => setIsResetModalOpen(true)}
+              isAdminRoute={isAdminRoute}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
               isLoading={isHistoryLoading}

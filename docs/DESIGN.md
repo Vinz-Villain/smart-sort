@@ -97,12 +97,12 @@ Di atas setiap tampilan data, terdapat kontrol pil responsif untuk beralih antar
 - **Diagnostik** (`Sliders` icon)
 
 ### 4.4 Panel Monitoring
-- **Bento 7-Kolom (Kapasitas Kompartemen)**: Progress bar dinamis 0–100% untuk ketiga wadah dengan status badge otomatis (*Tersedia, Waspada, Penuh*) dan tombol *Kosongkan Wadah*.
+- **Bento 7-Kolom (Kapasitas Kompartemen)**: Progress bar dinamis 0–100% untuk ketiga wadah dengan status badge otomatis (*Tersedia, Waspada, Penuh*) dan tombol *Kosongkan Wadah* (khusus rute `/adminnnn`).
 - **Bento 5-Kolom (Proporsi Sampah)**: ChartJS Doughnut dengan cutout 72%, legend di bawah berformat dot bullet, dan 3 pill persentase di footer.
 - **Tabel Aktivitas Terbaru**: Tabel 5 baris terakhir yang memperbarui data secara dinamis saat ada sampah baru terdeteksi.
 
 ### 4.5 Panel Riwayat Log
-- **Toolbar Filter & Search**: Tombol filter kategori instan (*All, Organik, Anorganik, Residu*), kolom input pencarian ID/waktu dengan ikon search, tombol ekspor CSV, dan tombol reset log.
+- **Toolbar Filter & Search**: Tombol filter kategori instan (*All, Organik, Anorganik, Residu*), kolom input pencarian ID/waktu dengan ikon search, tombol ekspor CSV, dan tombol reset log (khusus rute `/adminnnn`).
 - **Tabel Dataset**: Sticky header, pembatas baris halus, dan badge status *Tersortir* berwarna emerald.
 
 ### 4.6 Panel Diagnostik
