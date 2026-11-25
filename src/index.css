@@ -5,7 +5,7 @@
 @layer base {
   body {
     margin: 0;
-    background-color: #f6f8fd;
+    background-color: #f8fbf9;
     color: #0f172a;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
@@ -15,31 +15,63 @@
   }
 }
 
-/* Modern AirLume Style Fluted Ribs Background */
+/* Light Botanical Eco-Minimalist Fluted Ribs Background */
+.bg-fluted-green,
 .bg-fluted-blue {
-  background-color: #060b24;
-  background-image: 
-    radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.45) 0%, transparent 60%),
-    radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
-    radial-gradient(circle at 20% 60%, rgba(30, 58, 138, 0.35) 0%, transparent 50%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 52px);
+  background-color: #fafdfb;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(167, 243, 208, 0.28) 0%, transparent 48%),
+    radial-gradient(circle at 50% 56%, rgba(134, 239, 172, 0.22) 0%, transparent 44%),
+    radial-gradient(circle at 18% 32%, rgba(209, 250, 229, 0.24) 0%, transparent 45%),
+    radial-gradient(circle at 82% 35%, rgba(209, 250, 229, 0.24) 0%, transparent 45%),
+    repeating-linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0px, rgba(16, 185, 129, 0.04) 1px, transparent 1px, transparent 54px);
 }
 
-/* AirLume Card Shadows and Glows */
+/* Glossy 3D Eco Green Pill Button */
+.btn-eco-pill {
+  background: linear-gradient(180deg, #5ed655 0%, #2eb344 52%, #1d8a34 100%);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(6, 78, 59, 0.28),
+    0 12px 26px -6px rgba(34, 197, 94, 0.45);
+}
+
+.btn-eco-pill:hover {
+  background: linear-gradient(180deg, #6ee065 0%, #34c24c 52%, #21983a 100%);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+    0 14px 30px -6px rgba(34, 197, 94, 0.55);
+}
+
+/* Botanical Card Shadows and Glows */
 .shadow-airlume-card {
-  box-shadow: 0 25px 60px -15px rgba(2, 6, 23, 0.12), 0 0 1px 1px rgba(226, 232, 240, 0.8);
+  box-shadow: 0 22px 55px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(167, 243, 208, 0.7);
+}
+
+.shadow-botanical-glow {
+  box-shadow:
+    0 28px 65px -16px rgba(22, 163, 74, 0.28),
+    0 10px 28px -10px rgba(16, 185, 129, 0.2);
 }
 
 .shadow-airlume-glow {
-  box-shadow: 0 0 35px 2px rgba(56, 189, 248, 0.3), inset 0 0 25px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 24px 55px -12px rgba(16, 185, 129, 0.25), inset 0 0 20px rgba(167, 243, 208, 0.25);
 }
 
-/* Glass Card Dark */
+/* Botanical Glass Card */
+.glass-botanical-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 252, 247, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(52, 211, 153, 0.5);
+}
+
+/* Glass Card Dark (retained utility) */
 .glass-airlume-dark {
-  background: rgba(10, 22, 58, 0.65);
+  background: rgba(6, 36, 25, 0.68);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(56, 189, 248, 0.45);
+  border: 1px solid rgba(52, 211, 153, 0.42);
 }
 
 /* Custom Smooth Scrollbar */
@@ -49,14 +81,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.8);
+  background: rgba(240, 253, 244, 0.85);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(148, 163, 184, 0.45);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.6);
+  background: rgba(16, 185, 129, 0.65);
 }

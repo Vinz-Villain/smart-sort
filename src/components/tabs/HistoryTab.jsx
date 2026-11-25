@@ -34,7 +34,7 @@ export default function HistoryTab({
             <a
               href={`${API_BASE}/api/history/export?format=csv`}
               onClick={onExportCsv}
-              className="px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-blue-600/20 cursor-pointer"
+              className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-emerald-600/20 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" /> Unduh CSV
             </a>
@@ -61,7 +61,7 @@ export default function HistoryTab({
                 onClick={() => setFilterCategory(cat)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                   filterCategory === cat
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                 }`}
               >
@@ -77,7 +77,7 @@ export default function HistoryTab({
               placeholder="Cari ID atau timestamp..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition font-medium"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/15 transition font-medium"
             />
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function HistoryTab({
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-blue-900 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200/70 tabular-nums text-[11px]">
+                      <span className="font-semibold text-teal-900 bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-200/70 tabular-nums text-[11px]">
                         {row.confidence}%
                       </span>
                     </td>

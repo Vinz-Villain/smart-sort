@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Lock, X, ShieldAlert, KeyRound, Delete } from 'lucide-react';
 
-export default function PinModal({ isOpen, onClose, onVerify }) {
+export default function PinModal({ isOpen, onClose, onVerify, cancelLabel = 'Batal' }) {
   const [pinDigits, setPinDigits] = useState(['', '', '', '', '', '']);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,13 +112,13 @@ export default function PinModal({ isOpen, onClose, onVerify }) {
         </button>
 
         {/* Header Icon */}
-        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 border border-blue-100 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 border border-emerald-100 shadow-sm">
           <KeyRound className="w-6 h-6 stroke-[2.2]" />
         </div>
 
         <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight m-0 flex items-center gap-2">
           <span>Otentikasi Operator</span>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
             6 DIGIT
           </span>
         </h3>
@@ -142,8 +142,8 @@ export default function PinModal({ isOpen, onClose, onVerify }) {
                 errorMessage
                   ? 'border-rose-400 bg-rose-50/50 focus:border-rose-500'
                   : digit
-                  ? 'border-blue-500 bg-blue-50/30 text-blue-700'
-                  : 'border-slate-200 bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20'
+                  ? 'border-emerald-500 bg-emerald-50/30 text-emerald-700'
+                  : 'border-slate-200 bg-slate-50 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20'
               }`}
             />
           ))}
@@ -164,7 +164,7 @@ export default function PinModal({ isOpen, onClose, onVerify }) {
               key={num}
               type="button"
               onClick={() => handleKeypadPress(num)}
-              className="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-sm transition cursor-pointer"
+              className="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-emerald-100 text-slate-800 font-bold text-sm transition cursor-pointer"
             >
               {num}
             </button>
@@ -179,7 +179,7 @@ export default function PinModal({ isOpen, onClose, onVerify }) {
           <button
             type="button"
             onClick={() => handleKeypadPress(0)}
-            className="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-sm transition cursor-pointer"
+            className="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-emerald-100 text-slate-800 font-bold text-sm transition cursor-pointer"
           >
             0
           </button>
@@ -200,13 +200,13 @@ export default function PinModal({ isOpen, onClose, onVerify }) {
             type="button"
             className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
           >
-            Batal
+            {cancelLabel}
           </button>
           <button
             onClick={() => submitPin(pinDigits)}
             disabled={isSubmitting || pinDigits.some((d) => d === '')}
             type="button"
-            className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-600/30 transition cursor-pointer flex items-center justify-center gap-1.5"
+            className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Buka Kunci</span>

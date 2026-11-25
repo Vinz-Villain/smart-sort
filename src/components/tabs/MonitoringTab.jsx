@@ -86,7 +86,10 @@ export default function MonitoringTab({
 
           <div className="mt-5 sm:mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Threshold Penuh: 85%</span>
-            <span className="text-blue-600 font-semibold">Ultrasonik Aktif</span>
+            <span className="text-emerald-600 font-semibold inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Ultrasonik Aktif
+            </span>
           </div>
         </div>
 
@@ -140,7 +143,7 @@ export default function MonitoringTab({
           </div>
           <button
             onClick={() => onNavigateTab('history')}
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition cursor-pointer"
+            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition cursor-pointer"
           >
             Semua Log <ChevronRight className="w-4 h-4" />
           </button>
@@ -177,13 +180,13 @@ export default function MonitoringTab({
                       </span>
                     </td>
                     <td className="py-2.5 sm:py-3 px-3.5 sm:px-4">
-                      <span className="font-semibold text-blue-900 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200/70 tabular-nums text-[11px] sm:text-xs">
+                      <span className="font-semibold text-teal-900 bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-200/70 tabular-nums text-[11px] sm:text-xs">
                         {item.confidence}%
                       </span>
                     </td>
                     <td className="py-2.5 sm:py-3 px-3.5 sm:px-4 text-slate-600">
                       <span className="inline-flex items-center gap-1.5 font-medium text-[11px] sm:text-xs">
-                        <ArrowRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                        <ArrowRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         {item.action || `Flap bergerak ke ${item.servo_angle}°`}
                       </span>
                     </td>

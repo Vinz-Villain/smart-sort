@@ -6,15 +6,15 @@ Dokumen ini merupakan panduan resmi sistem desain, palet warna, tipografi, anato
 
 ## 1. Filosofi & Karakter Visual
 
-- **Tema Utama**: *Precision IoT & Edge AI Environmental Dashboard*.
+- **Tema Utama**: *Light Botanical Eco-Minimalist IoT & Edge AI Dashboard*.
 - **Karakter Antarmuka**:
-  - **Hero Area**: *Deep Fluted Navy* (`#060b24`) yang mencerminkan pusat kendali cerdas berteknologi tinggi dengan aksen pendaran cahaya (*ambient glow*) biru elektrik.
-  - **Body / Konten Data**: *Clean Off-White Canvas* (`#f6f8fd`) yang memberikan ruang bernapas luas, kontras tinggi, dan nyaman dipantau dalam jangka waktu panjang di laboratorium atau ruang kendali.
+  - **Hero Area**: *Light Botanical Fluted White* (`#fafdfb`) dengan garis arsitektural vertikal lembut (*fluted ribs*), pendaran hijau lembut (*ambient green glow*), serta tipografi dua nada (*charcoal* & hijau *sage* `#4a7c59`).
+  - **Body / Konten Data**: *Clean Mint-Tinted Canvas* (`#f8fbf9`) yang menyatu mulus dengan hero, memberikan kontras tinggi dan nyaman dipantau dalam jangka waktu panjang.
 - **Bentuk & Geometri**:
-  - Sudut lengkung besar: `rounded-2xl` (16px) hingga `rounded-3xl` (24px) pada kartu bento, tombol aksi, dan modal.
-  - Elemen pil (*pills*): `rounded-full` untuk badge status, tombol navigasi tab, dan indikator perangkat.
+  - Sudut lengkung besar: `rounded-2xl` (16px) hingga `rounded-3xl` (24px) pada bingkai showcase, kartu bertumpuk, dan modal.
+  - Elemen pil (*pills*): `rounded-full` untuk badge status, tombol CTA hijau *glossy* (`.btn-eco-pill`) dengan lingkaran ikon putih, dan indikator perangkat.
 - **Kedalaman Visual**:
-  - Perpaduan antara kartu putih dengan bayangan lembut berdimensi (`shadow-airlume-card`) dan kartu gelap tembus pandang (*glassmorphism*) dengan pendaran neon cyan (`glass-airlume-dark` & `shadow-airlume-glow`).
+  - Perpaduan kartu putih bersih (`shadow-airlume-card`), bingkai *Before/After & Live Camera* dengan border emerald bercahaya (`shadow-botanical-glow`), dan kartu carousel bertumpuk (*glassmorphic botanical card*).
 
 ---
 
@@ -23,18 +23,19 @@ Dokumen ini merupakan panduan resmi sistem desain, palet warna, tipografi, anato
 ### 2.1 Warna Fondasi (Surface & Canvas)
 | Token / Kelas | Kode Warna | Penggunaan |
 | :--- | :--- | :--- |
-| **Canvas Background** | `#f6f8fd` | Latar belakang seluruh halaman di bawah hero. |
-| **Hero Background** (`bg-fluted-blue`) | `#060b24` | Latar hero banner dengan radial gradient & garis vertikal (*fluted ribs*). |
-| **Card White** | `#ffffff` | Latar belakang kartu bento monitoring, tabel, dan form. |
-| **Card Dark Glass** (`glass-airlume-dark`) | `rgba(10, 22, 58, 0.65)` | Kartu bento aktuator servo dengan backdrop blur (24px). |
+| **Canvas Background** | `#f8fbf9` | Latar belakang seluruh halaman di bawah hero. |
+| **Hero Background** (`bg-fluted-green`) | `#fafdfb` | Latar hero banner putih bersih dengan radial glow hijau lembut & garis vertikal (*fluted ribs*). |
+| **Card White** | `#ffffff` | Latar belakang kartu monitoring, tabel, dan form. |
+| **Botanical Glass Card** (`glass-botanical-card`) | `rgba(255, 255, 255, 0.94)` | Kartu carousel bertumpuk dengan border `rgba(52, 211, 153, 0.5)` dan backdrop blur (20px). |
 | **Slate Borders** | `border-slate-200/80` | Garis tepi halus pemisah kartu bento dan tabel. |
 
 ### 2.2 Warna Aksen Utama
 | Token | Nilai Tailwind | Penggunaan |
 | :--- | :--- | :--- |
-| **Primary Accent** | `bg-blue-600` (`#2563eb`) | Tombol CTA utama, badge aktif, switch tab terpilih. |
-| **Primary Hover** | `bg-blue-500` / `hover:bg-blue-700` | State hover pada tombol interaktif. |
-| **Neon Cyan Accent** | `text-cyan-300` / border `rgba(56, 189, 248, 0.45)` | Aksen data aktuator, sudut servo, dan garis lintasan flap. |
+| **Glossy Eco Pill** (`.btn-eco-pill`) | Gradient `#5ed655 → #2eb344 → #1d8a34` | Tombol CTA hero & akses Operator dengan efek bevel mengilap dan lingkaran ikon putih. |
+| **Sage Headline Accent** | `#4a7c59` | Penekanan kata kunci hijau alami pada judul hero dan counter dinamis. |
+| **Primary Accent** | `bg-emerald-600` (`#059669`) | Tombol aksi panel data, filter aktif, dan indikator status aktif. |
+| **Secondary Eco Accent** | `bg-teal-50 text-teal-900` | Badge akurasi AI pada tabel agar tetap kontras dengan kategori sampah. |
 
 ### 2.3 Skema Warna Kategori Sampah (Hard Rule)
 Warna kategori sampah **wajib sinkron 100%** dengan sudut fisik servo SG90:
@@ -71,25 +72,23 @@ Font resmi proyek adalah **`Plus Jakarta Sans`** (didukung oleh sistem fallbacks
 
 ### 4.1 Header & Hero Section
 - **Navbar**:
-  - Logo SmartSort.Ai: Icon `Trash2` stroke 2.2 dengan latar gradient `from-blue-600 to-indigo-500` di dalam wadah `rounded-2xl`.
-  - Menu Segmented Center: 3 pill tab (`Monitoring`, `Riwayat Log`, `Kontrol Manual`) dalam wadah transparan `bg-white/5 border border-white/10 rounded-full`.
-  - Status Controller: Pill kanan yang menampilkan status real-time mikrokontroler (`ESP32: Online`).
+  - Logo SmartSort: Gambar wordmark resmi `src/assets/smartsort-logo.png` transparan (*Smart* hijau + *S[bin]rt*).
+  - Menu Tengah Minimalis: 3 tautan teks bersih (`Monitoring`, `Riwayat Log`, `Diagnostik`) dengan indikator dot emerald aktif.
+  - Status Controller: Pill kanan `ESP32: Online` dengan dot pulse emerald, serta badge statis non-interaktif `Admin` saat berhasil masuk ke dashboard `/adminnnn`.
 - **Hero Centerpiece**:
-  - Badge pill: `Sparkles` icon dengan teks *"Sort Smarter With SmartSort.Ai"*.
-  - Tombol CTA: *"Lihat Monitoring Sistem"* dengan efek *hover arrow translation* dan pendaran bayangan biru.
+  - Badge pill: Dot pulse emerald dengan teks *"Sistem Aktif • IoT & Edge AI"*.
+  - Headline H1: Tipografi dua warna (*charcoal* + hijau *sage*) dengan ikon daun 3D mengilap di tengah kalimat.
+  - Tombol CTA: *"Lihat Monitoring"* bergaya `.btn-eco-pill` dengan lingkaran ikon putih di sisi kanan.
 
-### 4.2 Tiga Kartu Showcase Bento (Signature AirLume)
-1. **Kartu Statistik (Kiri - Putih)**:
-   - Menampilkan total sampah secara masif dengan badge status *• Siap*.
-   - 3 baris pill ringkasan: Organik (hijau), Anorganik (oranye), Residu (merah) dengan angka terformat tabular.
-2. **Kartu Scanner Vision AI (Tengah - Putih)**:
-   - Badge akurasi sirkuler 98%.
-   - Pratinjau streaming rasio `aspect-video` dari modul kamera OV2640 dengan border biru tipis, tombol *refresh snapshot*, dan tag monospaced di sudut bawah.
-3. **Kartu Status Aktuator (Kanan - Dark Glass Neon)**:
-   - Latar kaca gelap `glass-airlume-dark` dengan pendaran `shadow-airlume-glow`.
-   - Pembacaan sudut servo besar (*SERVO → X°*).
-   - Jalur trajektori visual garis putus-putus dengan ikon panah meluncur menuju sudut tujuan (0°, 90°, 180°).
-   - Metrik sensor lingkungan DHT11 (°C) dan Gas MQ-135 (PPM).
+### 4.2 Showcase Kartu Telemetri Responsif
+- **Mobile (`< 768px`) — Carousel Kartu Bertumpuk & Gesture Swipe**:
+  - Menampilkan 1 kartu fokus bertumpuk (`.glass-botanical-card`) dengan dukungan **touch swipe kiri/kanan** (`onTouchStart`/`onTouchMove`/`onTouchEnd`), tombol panah `<` `>`, serta indikator dot untuk berpindah antar 4 informasi:
+    1. **Ringkasan Klasifikasi AI**: Total sampah terpilah dan counter kategori (Organik, Anorganik, Residu).
+    2. **Scanning Kamera OV2640**: Pratinjau live stream ESP32-CAM yang dapat diakses publik dengan *scanner reticles* dan tombol refresh.
+    3. **Status Aktuator Servo SG90**: Sudut flap aktif (`0°`, `90°`, `180°`) dan indikator kategori target.
+    4. **Sensor Lingkungan IoT**: Pembacaan real-time suhu `DHT11` dan kadar gas `MQ-135`.
+- **Tablet & Desktop (`>= 768px`) — Grid Terbuka 2×2 / 4-Kolom**:
+  - Seluruh 4 kartu telemetri ditampilkan sekaligus secara berdampingan (`md:grid-cols-2 lg:grid-cols-4`) tanpa perlu menekan panah agar operator PC/laptop dapat memantau semua informasi secara langsung.
 
 ### 4.3 Navigasi Segmented Control
 Di atas setiap tampilan data, terdapat kontrol pil responsif untuk beralih antara 3 mode kerja:
@@ -107,11 +106,12 @@ Di atas setiap tampilan data, terdapat kontrol pil responsif untuk beralih antar
 - **Tabel Dataset**: Sticky header, pembatas baris halus, dan badge status *Tersortir* berwarna emerald.
 
 ### 4.6 Panel Diagnostik
-- **Kotak Uji Servo**: 3 tombol sudut besar (0° Organik, 90° Anorganik, 180° Residu) dengan animasi *active:scale-95*.
-- **Kotak Frame Kamera**: Tampilan snapshot mandiri resolusi penuh untuk kalibrasi posisi kamera.
+- **Gerbang PIN Halaman `/adminnnn`**: Saat mengakses `/adminnnn` sebelum terotentikasi, modal PIN 6-digit langsung muncul sebelum halaman admin ditampilkan; setelah PIN terverifikasi, operator dapat langsung menggerakkan servo tanpa diminta PIN ulang.
+- **Kotak Uji Servo (Khusus Rute `/adminnnn`)**: 3 tombol sudut besar (0° Organik, 90° Anorganik, 180° Residu) dengan animasi *active:scale-95*. Tidak ditampilkan pada website publik (`/`).
+- **Kotak Frame Kamera (Publik)**: Tampilan snapshot mandiri resolusi penuh yang dapat diakses publik tanpa PIN.
 
 ### 4.7 Notifikasi & Dialog Modal
-- **Floating Toast**: Muncul di sudut kanan atas dengan backdrop blur, icon penanda (Centang biru untuk sukses, Segitiga merah untuk galat), dan animasi slide-in.
+- **Floating Toast**: Muncul di sudut kanan atas dengan backdrop blur, icon penanda (Centang emerald untuk sukses, Segitiga merah untuk galat), dan animasi slide-in.
 - **Modal Konfirmasi**: Kotak dialog terpusat dengan backdrop overlay gelap (`bg-slate-950/50 backdrop-blur-sm`) untuk mencegah ketidaksengajaan reset data.
 
 ---

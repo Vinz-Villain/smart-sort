@@ -33,7 +33,9 @@ export default function App() {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  const { isAuthenticated, verifyPin, logout } = useAdminAuth();
+  const { isAuthenticated, verifyPin } = useAdminAuth();
+  const isAdminRoute =
+    typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/adminnnn';
 
   const showToast = useCallback((msg, isError = false) => {
     setActionMessage({ msg, isError });
@@ -138,9 +140,13 @@ export default function App() {
     return false;
   };
 
-  const handleLogout = () => {
-    logout();
-    showToast('Sesi Operator Dikunci (Mode Tamu)');
+  const handleClosePinModal = () => {
+    if (isAdminRoute && !isAuthenticated) {
+      window.location.replace('/');
+      return;
+    }
+    setIsPinModalOpen(false);
+    setPendingAction(null);
   };
 
   // Action handlers
@@ -204,8 +210,10 @@ export default function App() {
     return matchesCategory && matchesSearch;
   });
 
+  const isAdminLocked = isAdminRoute && !isAuthenticated;
+
   return (
-    <div className="min-h-screen bg-[#F8FAFD] text-slate-800 font-sans selection:bg-blue-600 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-[#f8fbf9] text-slate-800 font-sans selection:bg-emerald-600 selection:text-white flex flex-col">
       <Toast message={actionMessage} />
 
       <ResetModal
@@ -215,19 +223,21 @@ export default function App() {
       />
 
       <PinModal
-        isOpen={isPinModalOpen}
-        onClose={() => {
-          setIsPinModalOpen(false);
-          setPendingAction(null);
-        }}
+        isOpen={isPinModalOpen || isAdminLocked}
+        onClose={handleClosePinModal}
         onVerify={handleVerifyPin}
+        cancelLabel={isAdminLocked ? 'Halaman Publik' : 'Batal'}
       />
 
-      {/* Hero Header Section */}
-      <section className="bg-fluted-blue text-white relative overflow-hidden pt-5 pb-16 sm:pb-24 border-b border-indigo-950/60">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-blue-500/20 blur-[120px] pointer-events-none -z-10" />
+      {isAdminLocked ? (
+        <main className="flex-1 bg-fluted-green flex items-center justify-center p-6" aria-label="Gerbang PIN Operator" />
+      ) : (
+        <>
+          {/* Hero Header Section (Light Botanical Fluted Canvas) */}
+      <section className="bg-fluted-green text-slate-900 relative overflow-hidden pt-5 pb-14 sm:pb-20 border-b border-emerald-900/10">
+        <div className="absolute top-28 left-1/2 -translate-x-1/2 w-[620px] h-[280px] bg-emerald-300/20 blur-[110px] pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 relative">
           <Navbar
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -235,10 +245,7 @@ export default function App() {
               if (tab === 'history') fetchHistory();
             }}
             statusData={statusData}
-            onOpenResetModal={() => requireAuth(() => setIsResetModalOpen(true))}
-            isAuthenticated={isAuthenticated}
-            onOpenPinModal={() => setIsPinModalOpen(true)}
-            onLogout={handleLogout}
+            isAdminMode={isAdminRoute && isAuthenticated}
           />
 
           <HeroSection onExplore={handleExploreMonitoring} />
@@ -251,15 +258,14 @@ export default function App() {
               setActiveTab(tab);
               if (tab === 'history') fetchHistory();
             }}
-            isAuthenticated={isAuthenticated}
-            onRequireAuth={requireAuth}
+            isAdminRoute={isAdminRoute}
             isLoading={isStatusLoading}
           />
         </div>
       </section>
 
       {/* Operation Control & Tab Section */}
-      <section id="control-section" className="bg-[#F8FAFD] py-8 sm:py-14 flex-1">
+      <section id="control-section" className="bg-[#f8fbf9] py-8 sm:py-14 flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-6 sm:space-y-8">
           <TabSwitcher
             activeTab={activeTab}
@@ -268,6 +274,7 @@ export default function App() {
               if (tab === 'history') fetchHistory();
             }}
             historyCount={isHistoryLoading ? '...' : historyData.length}
+            isAdminRoute={isAdminRoute}
           />
 
           {activeTab === 'dashboard' && (
@@ -307,6 +314,7 @@ export default function App() {
               cameraImageUrl={cameraImageUrl}
               onServoControl={handleServoControl}
               onRefreshCamera={handleRefreshCamera}
+              isAdminRoute={isAdminRoute}
               isAuthenticated={isAuthenticated}
               onRequireAuth={requireAuth}
             />
@@ -315,6 +323,8 @@ export default function App() {
       </section>
 
       <Footer />
+        </>
+      )}
     </div>
   );
 }

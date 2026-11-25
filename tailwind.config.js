@@ -17,9 +17,9 @@ export default {
         '5xl': '2.5rem',
       },
       boxShadow: {
-        'glass': '0 10px 40px -10px rgba(0, 0, 0, 0.05), 0 0 20px -5px rgba(99, 102, 241, 0.05)',
-        'glass-hover': '0 20px 40px -10px rgba(79, 70, 229, 0.12), 0 0 30px -5px rgba(168, 85, 247, 0.1)',
-        'glow-indigo': '0 0 30px -5px rgba(99, 102, 241, 0.4)',
+        'glass': '0 10px 40px -10px rgba(0, 0, 0, 0.05), 0 0 20px -5px rgba(16, 185, 129, 0.08)',
+        'glass-hover': '0 20px 40px -10px rgba(5, 150, 105, 0.14), 0 0 30px -5px rgba(20, 184, 166, 0.12)',
+        'glow-teal': '0 0 30px -5px rgba(20, 184, 166, 0.4)',
         'glow-emerald': '0 0 30px -5px rgba(16, 185, 129, 0.4)',
         'glow-amber': '0 0 30px -5px rgba(245, 158, 11, 0.4)',
       },
